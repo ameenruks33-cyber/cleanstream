@@ -1,10 +1,20 @@
 import request from 'supertest'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../app.ts'
 import { loadEnv } from '../config/env.ts'
 
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
 describe('API rate limiting', () => {
   it('rejects a burst of public search requests', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('offline')
+      }),
+    )
     const env = loadEnv({
       NODE_ENV: 'test',
       RATE_LIMIT_MAX: '3',

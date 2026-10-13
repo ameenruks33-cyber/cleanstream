@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from '@/app/layout/Sidebar'
 import { TopBar } from '@/app/layout/TopBar'
 import { MobileNav } from '@/app/layout/MobileNav'
+import { UpdateAlertsBanner } from '@/app/UpdateAlertsBanner'
 import { ConsentBanner } from '@/components/ConsentBanner'
 import { Brand } from '@/components/Brand'
 import { useImmersive } from '@/app/ImmersiveProvider'
@@ -49,6 +50,7 @@ export function AppShell() {
         </main>
       </div>
       <MobileNav />
+      <UpdateAlertsBanner />
       <ConsentBanner />
       {mobileOpen ? (
         <div className="fixed inset-0 z-40 md:hidden">
@@ -59,6 +61,7 @@ export function AppShell() {
               {[
                 ['/', 'Home'],
                 ['/search', 'Search'],
+                ['/movies', 'Movies'],
                 ['/library', 'Library'],
                 ['/favorites', 'Favorites'],
                 ['/playlists', 'Playlists'],

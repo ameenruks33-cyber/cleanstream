@@ -7,6 +7,7 @@ import {
   Library,
   ListMusic,
   PanelLeft,
+  Clapperboard,
   Search,
   Settings,
   Shield,
@@ -18,6 +19,7 @@ import { cn } from '@/lib/cn'
 const links = [
   { to: '/', label: 'Home', icon: House },
   { to: '/search', label: 'Search', icon: Search },
+  { to: '/movies', label: 'Movies', icon: Clapperboard },
   { to: '/library', label: 'Library', icon: Library },
   { to: '/favorites', label: 'Favorites', icon: Heart },
   { to: '/playlists', label: 'Playlists', icon: ListMusic },

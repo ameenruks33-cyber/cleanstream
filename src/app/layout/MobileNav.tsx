@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { Heart, House, Library, Search } from 'lucide-react'
+import { Clapperboard, Heart, House, Search } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
 const links = [
   { to: '/', label: 'Home', icon: House },
   { to: '/search', label: 'Search', icon: Search },
-  { to: '/library', label: 'Library', icon: Library },
+  { to: '/movies', label: 'Movies', icon: Clapperboard },
   { to: '/favorites', label: 'Saved', icon: Heart },
 ]
 

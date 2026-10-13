@@ -2,7 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useLibrary } from '@/app/LibraryProvider'
 import { Button } from '@/components/Button'
-import { fetchHealth, saveYoutubeApiKey } from '@/services/api'
+import { TMDB_LOGIN_API_URL, TMDB_SIGNUP_URL } from '@/lib/movieLinks'
+import { enableUpdateNotifications, notificationPermission } from '@/lib/deviceUpdates'
+import { fetchHealth, saveTmdbApiKey, saveYoutubeApiKey } from '@/services/api'
 import { protectVaultWithPassphrase, removeVaultPassphrase, vaultStatus } from '@/lib/cryptoVault'
 import { isSupabaseConfigured } from '@/services/supabaseClient'
 import type { ThemeMode } from '@/types'
@@ -18,14 +20,23 @@ export function SettingsPage() {
     useLibrary()
   const [email, setEmail] = useState('')
   const [apiKey, setApiKey] = useState('')
+  const [tmdbKey, setTmdbKey] = useState('')
   const [youtubeReady, setYoutubeReady] = useState(false)
+  const [moviesReady, setMoviesReady] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [passphrase, setPassphrase] = useState('')
   const [vaultLocked, setVaultLocked] = useState(false)
+  const [pushStatus, setPushStatus] = useState(notificationPermission())
+  const [pushMessage, setPushMessage] = useState<string | null>(null)
+  const [pushConfigured, setPushConfigured] = useState(false)
 
   useEffect(() => {
-    void fetchHealth().then((health) => setYoutubeReady(health.youtubeConfigured))
+    void fetchHealth().then((health) => {
+      setYoutubeReady(health.youtubeConfigured)
+      setMoviesReady(health.tmdbConfigured)
+      setPushConfigured(Boolean(health.pushConfigured))
+    })
     void vaultStatus().then((status) => setVaultLocked(status === 'locked'))
   }, [])
 
@@ -100,6 +111,104 @@ export function SettingsPage() {
         </form>
         {message ? <p className="mt-3 text-sm text-tide">{message}</p> : null}
         {error ? <p className="mt-3 text-sm text-ember">{error}</p> : null}
+      </section>
+
+      <section className="rounded-3xl border border-line bg-panel p-6">
+        <h2 className="font-display text-2xl">Movie discovery</h2>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          Movie search already works through Wikidata. A TMDB key unlocks posters plus confirmed JustWatch provider lists
+          by country. The settings/api page is locked until you log in.
+        </p>
+        <p className="mt-3 text-sm text-muted">
+          Status:{' '}
+          <strong className="text-ink">
+            {moviesReady ? 'TMDB confirmed availability is on' : 'Wikidata search is on (TMDB key optional)'}
+          </strong>
+        </p>
+        <ol className="mt-4 list-decimal space-y-1 pl-5 text-sm leading-6 text-muted">
+          <li>
+            <a className="text-tide" href={TMDB_SIGNUP_URL} target="_blank" rel="noreferrer">
+              Create a free TMDB account
+            </a>{' '}
+            or{' '}
+            <a className="text-tide" href={TMDB_LOGIN_API_URL} target="_blank" rel="noreferrer">
+              log in and open API settings
+            </a>
+            .
+          </li>
+          <li>
+            Copy the <strong className="text-ink">API Key</strong> (32 characters). Do not paste the API Read Access
+            Token. It stays on this computer.
+          </li>
+        </ol>
+        <form
+          className="mt-4 flex flex-col gap-3 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault()
+            setError(null)
+            void saveTmdbApiKey(tmdbKey)
+              .then(() => {
+                setMoviesReady(true)
+                setTmdbKey('')
+                setMessage('TMDB confirmed availability is on. Search a movie again.')
+              })
+              .catch((err: unknown) => {
+                setError(err instanceof Error ? err.message : 'Could not save the TMDB key.')
+              })
+          }}
+        >
+          <input
+            type="password"
+            autoComplete="off"
+            value={tmdbKey}
+            onChange={(event) => setTmdbKey(event.target.value)}
+            placeholder="TMDB v3 API key"
+            aria-label="TMDB API key"
+            className="flex-1 rounded-full border border-line bg-raised px-4 py-2.5 text-sm"
+          />
+          <Button variant="primary" type="submit">
+            Save TMDB key
+          </Button>
+        </form>
+      </section>
+
+      <section className="rounded-3xl border border-line bg-panel p-6">
+        <h2 className="font-display text-2xl">Device updates</h2>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          Installed phones and computers only receive an alert after you allow notifications on that device. Tap the
+          button below — you should see a test notification immediately. Later releases can then wake this device with
+          Web Push. Delivery is still not guaranteed if the device is offline, alerts stay blocked, or the OS pauses
+          background work.
+        </p>
+        <p className="mt-3 text-sm text-muted">
+          Status:{' '}
+          <strong className="text-ink">
+            {pushStatus === 'granted'
+              ? pushConfigured
+                ? 'Notifications on (Web Push ready)'
+                : 'Notifications on (background version check)'
+              : pushStatus === 'denied'
+                ? 'Notifications blocked'
+                : pushStatus === 'unsupported'
+                  ? 'Not supported in this browser'
+                  : 'Not enabled yet'}
+          </strong>
+        </p>
+        {pushMessage ? <p className="mt-3 text-sm text-tide">{pushMessage}</p> : null}
+        <Button
+          className="mt-4"
+          variant="primary"
+          onClick={() => {
+            void enableUpdateNotifications().then((result) => {
+              setPushStatus(notificationPermission())
+              setPushMessage(result.message)
+              if (result.ok) setMessage(result.message)
+              else setError(result.message)
+            })
+          }}
+        >
+          Notify this device of updates
+        </Button>
       </section>
 
       <section className="rounded-3xl border border-line bg-panel p-6">

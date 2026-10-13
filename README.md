@@ -20,12 +20,12 @@ This project lives only at `E:\youtube add free`.
 src/                  React UI, library logic, tests
   app/                Providers, router, shell (Ad Shield provider)
   components/         Shared UI
-  features/           Home, search, player, playlists, history, favorites, settings, Ad Shield
+  features/           Home, search, movies, player, playlists, history, favorites, settings, Ad Shield
   lib/adshield/       App-level filter engine, domain validation, local storage
   lib/                Validation, library reducers, auth helper
   services/           API client, optional Supabase
   tests/              Frontend tests
-server/               Express API (YouTube proxy, library, security)
+server/               Express API (YouTube proxy, movies, library, security)
   routes/ middleware/ services/ config/ tests/
 supabase/migrations/  Optional RLS-backed library table
 electron/             Windows desktop wrapper + session.webRequest Ad Shield adapter
@@ -59,8 +59,12 @@ Without a YouTube API key, search still returns watchable videos and plays them 
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only | Never expose this. Not used by the UI. |
 | `VITE_SUPABASE_URL` | Frontend | Same URL as `SUPABASE_URL` |
 | `VITE_SUPABASE_ANON_KEY` | Frontend | Same value as `SUPABASE_ANON_KEY` |
+| `TMDB_API_KEY` | Server only | Movie metadata + licensed JustWatch watch-providers |
+| `JUSTWATCH_PARTNER_TOKEN` | Server only | Optional; only if you have a JustWatch partner contract |
+| `MOVIE_CRON_SECRET` | Server only | Optional protection for `/api/movies/jobs/refresh` |
+| `DEFAULT_WATCH_REGION` | Server | Default OTT country (`AE` = UAE) |
 
-Do not prefix the YouTube key or the service-role key with `VITE_`.
+Do not prefix the YouTube key, TMDB key, JustWatch token, or the service-role key with `VITE_`.
 
 ## YouTube Data API v3
 
@@ -75,6 +79,23 @@ Do not prefix the YouTube key or the service-role key with `VITE_`.
 Official docs: [YouTube Data API](https://developers.google.com/youtube/v3). Policies: [YouTube API Services](https://developers.google.com/youtube/terms/developer-policies).
 
 Search uses quota. This app caches successful API responses in memory for ten minutes and surfaces quota errors instead of retrying blindly.
+
+## Legal movie discovery (TMDB + JustWatch)
+
+Movies in MyTube are a **legal availability catalog**, not a pirate search. Search works immediately through [Wikidata](https://www.wikidata.org/) (no login). Official viewing links go to [JustWatch](https://www.justwatch.com/) for the selected country. Default region is the **United Arab Emirates (`AE`)**.
+
+TMDB’s `/settings/api` page is locked until you log in. To unlock confirmed provider lists:
+
+1. [Create a TMDB account](https://www.themoviedb.org/signup) or [log in and open API settings](https://www.themoviedb.org/login?redirect_to=%2Fsettings%2Fapi).
+2. Confirm current TMDB terms, attribution, and commercial use. TMDB requires attribution (“This product uses the TMDB API but is not endorsed or certified by TMDB”).
+3. Put the key in `.env` as `TMDB_API_KEY` (server only).
+4. Restart `npm run dev` and open **Movies**.
+
+Availability comes from TMDB `GET /3/movie/{id}/watch/providers`, which TMDB documents as JustWatch data. Each title must show JustWatch attribution. Direct JustWatch Partner API calls are **not** made unless you have a signed partner agreement and set `JUSTWATCH_PARTNER_TOKEN`.
+
+MyTube does **not** scrape JustWatch, piracy websites, Telegram bots, or unauthorized full-movie files. Playback links are HTTPS JustWatch/TMDB URLs only.
+
+Watchlist, search history, and release notifications stay in the encrypted device vault. A bounded in-process queue refreshes permitted availability; on Vercel, opening Movies refreshes the watchlist on demand. `GET /api/movies/jobs/refresh` reports queue status (optional `X-Cron-Secret`).
 
 ## Optional Supabase
 

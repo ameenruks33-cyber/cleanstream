@@ -10,6 +10,13 @@ const baseEnv: Env = {
   SUPABASE_ANON_KEY: '',
   SUPABASE_SERVICE_ROLE_KEY: '',
   NODE_ENV: 'test',
+  TMDB_API_KEY: '',
+  JUSTWATCH_PARTNER_TOKEN: '',
+  MOVIE_CRON_SECRET: '',
+  DEFAULT_WATCH_REGION: 'AE',
+  VAPID_PUBLIC_KEY: '',
+  VAPID_PRIVATE_KEY: '',
+  VAPID_SUBJECT: 'mailto:support@localhost',
 }
 
 afterEach(() => {

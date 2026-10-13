@@ -21,6 +21,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
   function onSubmit(event: FormEvent) {
     event.preventDefault()
     const value = query.trim()
+    if (!value) return
     const path = searchOrWatchPath(value)
     if (!path) return
     navigate(path)
@@ -37,8 +38,8 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search any video in the world, or paste a link"
-            aria-label="Search any video"
+            placeholder="Search any movie or video"
+            aria-label="Search any movie or video"
             className="w-full rounded-full border border-line bg-panel py-2.5 pl-10 pr-4 text-sm outline-none placeholder:text-muted focus:border-tide"
           />
         </div>

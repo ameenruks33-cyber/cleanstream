@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   validateOwnedVideoId,
   validatePlaylistName,
+  validateReleaseYear,
   validateSearchQuery,
+  validateMovieId,
+  validateTmdbMovieId,
+  validateVideoLanguageCode,
   validateVideoSource,
   validateYoutubeVideoId,
 } from '@/lib/validation'
@@ -40,6 +44,13 @@ describe('video id validation', () => {
     expect(validateVideoSource('cleanstream').ok).toBe(true)
     expect(validateVideoSource('torrent').ok).toBe(false)
   })
+
+  it('accepts supported video languages', () => {
+    expect(validateVideoLanguageCode('ml').ok).toBe(true)
+    expect(validateVideoLanguageCode('ta').ok).toBe(true)
+    expect(validateVideoLanguageCode('ar').ok).toBe(true)
+    expect(validateVideoLanguageCode('xx').ok).toBe(false)
+  })
 })
 
 describe('YouTube link parsing', () => {
@@ -57,6 +68,17 @@ describe('YouTube link parsing', () => {
     expect(searchOrWatchPath('https://youtu.be/aqz-KE-bpKQ')).toBe('/watch/youtube/aqz-KE-bpKQ')
     expect(searchOrWatchPath('lofi hip hop')).toBe('/search?q=lofi%20hip%20hop')
     expect(searchOrWatchPath('independent')).toBe('/search?q=independent')
+  })
+})
+
+describe('movie identifiers', () => {
+  it('accepts TMDB ids and release years', () => {
+    expect(validateTmdbMovieId('550').ok).toBe(true)
+    expect(validateTmdbMovieId('0').ok).toBe(false)
+    expect(validateMovieId('Q11424').ok).toBe(true)
+    expect(validateMovieId('Q0').ok).toBe(false)
+    expect(validateReleaseYear('1999').ok).toBe(true)
+    expect(validateReleaseYear('1800').ok).toBe(false)
   })
 })
 

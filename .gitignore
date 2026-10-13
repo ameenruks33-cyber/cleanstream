@@ -17,6 +17,7 @@ release
 .env
 .env.*.local
 *.db
+data/push-subscriptions.json
 .vercel
 media/input/*
 media/output/*

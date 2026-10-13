@@ -63,6 +63,8 @@ describe('required APIs remain functional with Ad Shield CSP', () => {
     const csp = String(response.headers['content-security-policy'] ?? '')
     expect(csp).toMatch(/object-src 'none'/)
     expect(csp).toMatch(/frame-src[^;]*youtube.com/)
+    expect(csp).toMatch(/img-src[^;]*image\.tmdb\.org/)
+    expect(csp).toMatch(/img-src[^;]*upload\.wikimedia\.org/)
     expect(csp).not.toMatch(/googlesyndication/)
     expect(csp).not.toMatch(/doubleclick/)
   })

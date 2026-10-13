@@ -48,25 +48,9 @@ export function HomePage() {
         <div className="flex flex-wrap items-center gap-5">
           <BrandLogo className="h-24 w-24 md:h-28 md:w-28" />
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-muted">Watch worldwide</p>
-            <WaveName as="h1" className="mt-2 text-5xl md:text-7xl" />
+            <WaveName as="h1" className="text-5xl md:text-7xl" />
             <WaveLine className="mt-2 w-40 md:w-56" />
           </div>
-        </div>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-ink">
-          Search any video in the world. MyTube adds none of its own ads.
-        </p>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-          Type a title, topic, or paste any YouTube link. Videos play in the official YouTube player — YouTube may still
-          show its advertisements. Licensed MyTube titles use a separate HTML5 player with no ads.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/search">
-            <Button variant="primary">Search any video</Button>
-          </Link>
-          <Link to="/library">
-            <Button variant="ghost">Open MyTube library</Button>
-          </Link>
         </div>
       </section>
 

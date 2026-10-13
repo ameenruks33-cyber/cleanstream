@@ -20,7 +20,12 @@ function autoUpdatePlugin(): Plugin {
       }
       writeFileSync(
         path.resolve(root, 'dist/version.json'),
-        `${JSON.stringify({ version, builtAt: new Date().toISOString() })}\n`,
+        `${JSON.stringify({
+          version,
+          builtAt: new Date().toISOString(),
+          channel: 'web',
+          notes: 'Reload the installed web app to activate this release.',
+        })}\n`,
       )
     },
   }

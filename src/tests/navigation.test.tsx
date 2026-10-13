@@ -16,6 +16,7 @@ function renderNav() {
             <Route element={<AppShell />}>
               <Route path="/" element={<h1>Home</h1>} />
               <Route path="/search" element={<h1>Search</h1>} />
+              <Route path="/movies" element={<h1>Movies</h1>} />
               <Route path="/library" element={<h1>Library</h1>} />
               <Route path="/favorites" element={<h1>Favorites</h1>} />
               <Route path="/settings" element={<h1>Settings</h1>} />

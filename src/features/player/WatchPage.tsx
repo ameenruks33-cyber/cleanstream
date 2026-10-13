@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Heart, ListPlus } from 'lucide-react'
 import { useLibrary } from '@/app/LibraryProvider'
@@ -14,7 +14,10 @@ import { formatCompactNumber, formatDate, formatDuration } from '@/lib/format'
 import { validateOwnedVideoId, validateVideoSource, validateYoutubeVideoId } from '@/lib/validation'
 import { enhancedMediaUrl, fetchEnhanceJob, fetchOwnedVideo, fetchYoutubeVideo, inspectVideoQuality, queueEnhancement } from '@/services/api'
 import { EnhanceStatus } from '@/features/player/EnhanceStatus'
+import VideoLanguageSwitcher from '@/components/VideoLanguageSwitcher'
+import { languageLabel, type VideoLanguageTrack } from '@/lib/videoLanguages'
 import { ownedVideos } from '@/data/ownedVideos'
+import { readPlaybackProgress, writePlaybackProgress } from '@/lib/playbackProgress'
 import {
   ensureCurrentInQueue,
   neighborsInQueue,
@@ -49,6 +52,7 @@ export function WatchPage() {
   const [job, setJob] = useState<EnhanceJob | null>(null)
   const [usingEnhanced, setUsingEnhanced] = useState(false)
   const [queue, setQueue] = useState<WatchQueue>(() => readWatchQueue())
+  const [languageTrack, setLanguageTrack] = useState<VideoLanguageTrack | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -57,6 +61,7 @@ export function WatchPage() {
       setError(null)
       setYoutube(null)
       setOwned(null)
+      setLanguageTrack(null)
       const sourceResult = validateVideoSource(source)
       if (!sourceResult.ok) {
         setError(sourceResult.error)
@@ -209,6 +214,27 @@ export function WatchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [video?.id, video?.source])
 
+  const onLanguageApplied = useCallback((track: VideoLanguageTrack) => {
+    setLanguageTrack(track)
+  }, [])
+
+  const playerLanguage = {
+    captions: languageTrack?.trackUrl
+      ? [
+          {
+            src: languageTrack.trackUrl,
+            label: languageLabel(languageTrack.language),
+            srclang: languageTrack.language,
+          },
+        ]
+      : owned?.captions,
+    captionLanguage: languageTrack?.language,
+    dubbed: languageTrack?.mode === 'dubbed',
+    dubAudioUrl: languageTrack?.audioUrl,
+    dubCues: languageTrack?.cues,
+    dubLanguage: languageTrack?.language,
+  }
+
   const youtubeWatchUrl = useMemo(
     () => (youtube ? `https://www.youtube.com/watch?v=${youtube.id}` : null),
     [youtube],
@@ -262,8 +288,17 @@ export function WatchPage() {
               src={usingEnhanced && job?.outputId ? enhancedMediaUrl(job.outputId) : owned.src}
               poster={owned.poster}
               title={owned.title}
-              captions={owned.captions}
-              onProgress={(seconds) => library.addToHistory(owned, seconds)}
+              captions={playerLanguage.captions}
+              captionLanguage={playerLanguage.captionLanguage}
+              dubbed={playerLanguage.dubbed}
+              dubAudioUrl={playerLanguage.dubAudioUrl}
+              dubCues={playerLanguage.dubCues}
+              dubLanguage={playerLanguage.dubLanguage}
+              startAt={readPlaybackProgress('cleanstream', owned.id)}
+              onProgress={(seconds, duration) => {
+                library.addToHistory(owned, seconds)
+                writePlaybackProgress('cleanstream', owned.id, seconds, duration)
+              }}
               onEnded={next ? () => goTo(next) : undefined}
               immersive
             />
@@ -292,8 +327,17 @@ export function WatchPage() {
               src={usingEnhanced && job?.outputId ? enhancedMediaUrl(job.outputId) : owned.src}
               poster={owned.poster}
               title={owned.title}
-              captions={owned.captions}
-              onProgress={(seconds) => library.addToHistory(owned, seconds)}
+              captions={playerLanguage.captions}
+              captionLanguage={playerLanguage.captionLanguage}
+              dubbed={playerLanguage.dubbed}
+              dubAudioUrl={playerLanguage.dubAudioUrl}
+              dubCues={playerLanguage.dubCues}
+              dubLanguage={playerLanguage.dubLanguage}
+              startAt={readPlaybackProgress('cleanstream', owned.id)}
+              onProgress={(seconds, duration) => {
+                library.addToHistory(owned, seconds)
+                writePlaybackProgress('cleanstream', owned.id, seconds, duration)
+              }}
               onEnded={next ? () => goTo(next) : undefined}
             />
           ) : null}
@@ -306,6 +350,7 @@ export function WatchPage() {
               usingEnhanced={usingEnhanced}
               onToggle={() => setUsingEnhanced((value) => !value)}
             />
+            <VideoLanguageSwitcher videoId={owned.id} onApplied={onLanguageApplied} />
             <p className="text-xs text-muted">Licensed MyTube file — HTML5 player with no advertising SDK.</p>
           </div>
         ) : null}

@@ -14,6 +14,9 @@ import { SettingsPage } from '@/features/settings/SettingsPage'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { AboutPage } from '@/features/about/AboutPage'
 import { AdShieldPage } from '@/features/adshield/AdShieldPage'
+import { MoviesPage } from '@/features/movies/MoviesPage'
+import { MovieDetailPage } from '@/features/movies/MovieDetailPage'
+import { MovieLibraryProvider } from '@/app/MovieLibraryProvider'
 import { InstallGate } from '@/app/InstallGate'
 import { VaultLock } from '@/app/VaultLock'
 import { NativeApp } from '@/app/NativeApp'
@@ -25,30 +28,34 @@ export default function App() {
       <InstallGate>
         <VaultLock>
           <LibraryProvider>
-            <AdShieldProvider>
-              <ThemeProvider>
-                <BrowserRouter>
-                  <ImmersiveProvider>
-                    <Routes>
-                      <Route element={<AppShell />}>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/search" element={<SearchPage />} />
-                        <Route path="/watch/:source/:id" element={<WatchPage />} />
-                        <Route path="/playlists" element={<PlaylistsPage />} />
-                        <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
-                        <Route path="/history" element={<HistoryPage />} />
-                        <Route path="/favorites" element={<FavoritesPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="/ad-shield" element={<AdShieldPage />} />
-                        <Route path="/library" element={<LibraryPage />} />
-                        <Route path="/about" element={<AboutPage />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Route>
-                    </Routes>
-                  </ImmersiveProvider>
-                </BrowserRouter>
-              </ThemeProvider>
-            </AdShieldProvider>
+            <MovieLibraryProvider>
+              <AdShieldProvider>
+                <ThemeProvider>
+                  <BrowserRouter>
+                    <ImmersiveProvider>
+                      <Routes>
+                        <Route element={<AppShell />}>
+                          <Route path="/" element={<HomePage />} />
+                          <Route path="/search" element={<SearchPage />} />
+                          <Route path="/movies" element={<MoviesPage />} />
+                          <Route path="/movies/:id" element={<MovieDetailPage />} />
+                          <Route path="/watch/:source/:id" element={<WatchPage />} />
+                          <Route path="/playlists" element={<PlaylistsPage />} />
+                          <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
+                          <Route path="/history" element={<HistoryPage />} />
+                          <Route path="/favorites" element={<FavoritesPage />} />
+                          <Route path="/settings" element={<SettingsPage />} />
+                          <Route path="/ad-shield" element={<AdShieldPage />} />
+                          <Route path="/library" element={<LibraryPage />} />
+                          <Route path="/about" element={<AboutPage />} />
+                          <Route path="*" element={<Navigate to="/" replace />} />
+                        </Route>
+                      </Routes>
+                    </ImmersiveProvider>
+                  </BrowserRouter>
+                </ThemeProvider>
+              </AdShieldProvider>
+            </MovieLibraryProvider>
           </LibraryProvider>
         </VaultLock>
       </InstallGate>

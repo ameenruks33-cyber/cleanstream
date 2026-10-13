@@ -36,6 +36,13 @@ export const ownedVideos: OwnedVideo[] = [
     duration: 'PT10M53S',
     license: 'Creative Commons Attribution 2.5 — Blender Foundation / Netherlands Media Art Institute',
     description: 'The first open movie made with Blender, hosted here as a licensed MyTube library title.',
+    captions: [
+      {
+        src: '/api/video-language/media/elephants-dream/en.vtt',
+        label: 'English',
+        srclang: 'en',
+      },
+    ],
   },
   {
     id: 'sintel',
@@ -49,6 +56,13 @@ export const ownedVideos: OwnedVideo[] = [
     duration: 'PT14M48S',
     license: 'Creative Commons Attribution 3.0 — Blender Foundation',
     description: 'A short fantasy film produced by the Blender Institute, included as a licensed library title.',
+    captions: [
+      {
+        src: '/api/video-language/media/sintel/en.vtt',
+        label: 'English',
+        srclang: 'en',
+      },
+    ],
   },
   {
     id: 'tears-of-steel',
@@ -62,6 +76,13 @@ export const ownedVideos: OwnedVideo[] = [
     duration: 'PT12M14S',
     license: 'Creative Commons Attribution 3.0 — Blender Foundation',
     description: 'A live-action and CGI short from the Blender Institute. Served as an original MyTube file.',
+    captions: [
+      {
+        src: '/api/video-language/media/tears-of-steel/en.vtt',
+        label: 'English',
+        srclang: 'en',
+      },
+    ],
   },
 ]
 

@@ -11,6 +11,9 @@ import { libraryRouter } from './routes/library.ts'
 import { healthRouter } from './routes/health.ts'
 import { setupRouter } from './routes/setup.ts'
 import { enhanceRouter } from './routes/enhance.ts'
+import { moviesRouter } from './routes/movies.ts'
+import { updatesRouter } from './routes/updates.ts'
+import { videoLanguageRouter } from './routes/videoLanguage.ts'
 import type { Env } from './config/env.ts'
 
 export function createApp(env: Env) {
@@ -27,6 +30,9 @@ export function createApp(env: Env) {
   app.use('/api/youtube', youtubeRouter(env))
   app.use('/api/library', libraryRouter())
   app.use('/api/enhance', enhanceRouter())
+  app.use('/api/movies', moviesRouter(env))
+  app.use('/api/updates', updatesRouter(env))
+  app.use('/api/video-language', videoLanguageRouter())
   app.use('/api', notFound)
 
   const dist = join(process.cwd(), 'dist')

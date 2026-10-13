@@ -1,4 +1,5 @@
 import type { VideoSource } from '@/types'
+import { VIDEO_LANGUAGE_CODES, type VideoLanguageCode } from './videoLanguages.ts'
 
 export const YOUTUBE_ID_RE = /^[A-Za-z0-9_-]{11}$/
 export const SEARCH_QUERY_MAX = 500
@@ -64,6 +65,46 @@ export function validateVideoSource(raw: string): ValidationResult<VideoSource> 
     return { ok: true, value: raw }
   }
   return { ok: false, error: 'Unknown video source.', code: 'INVALID_SOURCE' }
+}
+
+export function validateTmdbMovieId(raw: string | number): ValidationResult<number> {
+  const id = Number(String(raw).trim())
+  if (!Number.isInteger(id) || id < 1 || id > 99_999_999) {
+    return { ok: false, error: 'That movie id is not valid.', code: 'INVALID_MOVIE_ID' }
+  }
+  return { ok: true, value: id }
+}
+
+export function validateMovieId(raw: string): ValidationResult<string> {
+  const id = raw.trim()
+  if (/^Q[1-9]\d{0,11}$/.test(id)) return { ok: true, value: id }
+  const numeric = validateTmdbMovieId(id)
+  if (numeric.ok) return { ok: true, value: String(numeric.value) }
+  return { ok: false, error: 'That movie id is not valid.', code: 'INVALID_MOVIE_ID' }
+}
+
+export function validateReleaseYear(raw: string): ValidationResult<number> {
+  const year = Number(String(raw).trim())
+  if (!Number.isInteger(year) || year < 1870 || year > 2100) {
+    return { ok: false, error: 'Year is not valid.', code: 'INVALID_YEAR' }
+  }
+  return { ok: true, value: year }
+}
+
+export function validateLanguageCode(raw: string): ValidationResult<string> {
+  const value = raw.trim().toLowerCase()
+  if (!/^[a-z]{2}(?:-[A-Z]{2})?$/i.test(value) || value.length > 5) {
+    return { ok: false, error: 'Language code is not valid.', code: 'INVALID_LANGUAGE' }
+  }
+  return { ok: true, value: value.slice(0, 2) }
+}
+
+export function validateVideoLanguageCode(raw: string): ValidationResult<VideoLanguageCode> {
+  const value = raw.trim().toLowerCase()
+  if ((VIDEO_LANGUAGE_CODES as string[]).includes(value)) {
+    return { ok: true, value: value as VideoLanguageCode }
+  }
+  return { ok: false, error: 'That language is not supported.', code: 'INVALID_LANGUAGE' }
 }
 
 export function validateOwnedVideoId(raw: string): ValidationResult<string> {

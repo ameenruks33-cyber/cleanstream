@@ -8,6 +8,7 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react'
+import type { LanguageCue, VideoLanguageCode } from '@/lib/videoLanguages'
 import type { CaptionTrack } from '@/types'
 import { formatClock } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -19,16 +20,49 @@ type Props = {
   poster?: string
   title: string
   captions?: CaptionTrack[]
+  captionLanguage?: string
+  dubbed?: boolean
+  dubAudioUrl?: string
+  dubCues?: LanguageCue[]
+  dubLanguage?: VideoLanguageCode
+  startAt?: number
   onProgress?: (seconds: number, duration: number) => void
   onEnded?: () => void
   immersive?: boolean
 }
 
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
+const SPEECH_LANG: Record<string, string> = {
+  ml: 'ml-IN',
+  ta: 'ta-IN',
+  en: 'en-US',
+  hi: 'hi-IN',
+  ar: 'ar-SA',
+}
 
-export function Html5Player({ src, poster, title, captions = [], onProgress, onEnded, immersive = false }: Props) {
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
+const EMPTY_CUES: LanguageCue[] = []
+
+export function Html5Player({
+  src,
+  poster,
+  title,
+  captions = [],
+  captionLanguage,
+  dubbed = false,
+  dubAudioUrl,
+  dubCues = EMPTY_CUES,
+  dubLanguage = 'en',
+  startAt = 0,
+  onProgress,
+  onEnded,
+  immersive = false,
+}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const dubRef = useRef<HTMLAudioElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
+  const volumeRef = useRef(1)
+  const mutedRef = useRef(false)
+  const speedRef = useRef(1)
   const [playing, setPlaying] = useState(false)
   const [muted, setMuted] = useState(false)
   const [volume, setVolume] = useState(1)
@@ -47,7 +81,13 @@ export function Html5Player({ src, poster, title, captions = [], onProgress, onE
       setCurrent(video.currentTime)
       onProgress?.(video.currentTime, video.duration || 0)
     }
-    const onMeta = () => setDuration(video.duration || 0)
+    const onMeta = () => {
+      const length = video.duration || 0
+      setDuration(length)
+      if (startAt > 1 && length > 0 && startAt < length - 2) {
+        video.currentTime = startAt
+      }
+    }
     const onWait = () => setBuffered(true)
     const onPlay = () => {
       setBuffered(false)
@@ -72,15 +112,100 @@ export function Html5Player({ src, poster, title, captions = [], onProgress, onE
       video.removeEventListener('error', onErr)
       video.removeEventListener('ended', onFinish)
     }
-  }, [onProgress, onEnded])
+  }, [onProgress, onEnded, startAt])
 
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
     for (const track of Array.from(video.textTracks)) {
-      track.mode = captionsOn ? 'showing' : 'hidden'
+      const match = captionLanguage ? track.language === captionLanguage : true
+      track.mode = captionsOn && match ? 'showing' : 'hidden'
     }
-  }, [captionsOn, captions])
+  }, [captionsOn, captions, captionLanguage])
+
+  useEffect(() => {
+    volumeRef.current = volume
+    mutedRef.current = muted
+    speedRef.current = speed
+  }, [muted, speed, volume])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    video.muted = dubbed || muted
+    if (!dubbed) video.volume = volume
+  }, [dubbed, muted, volume])
+
+  useEffect(() => {
+    const video = videoRef.current
+    const audio = dubRef.current
+    if (!video || !audio || !dubbed || !dubAudioUrl) return
+    const sync = () => {
+      if (Math.abs(audio.currentTime - video.currentTime) > 0.35) {
+        audio.currentTime = video.currentTime
+      }
+      audio.muted = muted
+      audio.volume = muted ? 0 : volume
+      audio.playbackRate = speed
+    }
+    const onPlay = () => {
+      sync()
+      void audio.play()
+    }
+    const onPause = () => audio.pause()
+    video.addEventListener('play', onPlay)
+    video.addEventListener('pause', onPause)
+    video.addEventListener('seeked', sync)
+    video.addEventListener('timeupdate', sync)
+    sync()
+    if (!video.paused) void audio.play()
+    return () => {
+      video.removeEventListener('play', onPlay)
+      video.removeEventListener('pause', onPause)
+      video.removeEventListener('seeked', sync)
+      video.removeEventListener('timeupdate', sync)
+      audio.pause()
+    }
+  }, [dubAudioUrl, dubbed, muted, speed, volume])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !dubbed || dubAudioUrl || dubCues.length === 0) return
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    let last = -1
+    const speak = (text: string) => {
+      window.speechSynthesis.cancel()
+      if (mutedRef.current) return
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.lang = SPEECH_LANG[dubLanguage] ?? 'en-US'
+      utterance.volume = volumeRef.current
+      utterance.rate = Math.min(2, Math.max(0.5, speedRef.current))
+      window.speechSynthesis.speak(utterance)
+    }
+    const onTime = () => {
+      if (video.paused) return
+      const time = video.currentTime
+      const index = dubCues.findIndex((cue) => time >= cue.start && time < cue.end)
+      if (index === last) return
+      last = index
+      if (index >= 0) speak(dubCues[index].text)
+      else window.speechSynthesis.cancel()
+    }
+    const onPause = () => window.speechSynthesis.cancel()
+    const onSeek = () => {
+      last = -1
+      onTime()
+    }
+    video.addEventListener('timeupdate', onTime)
+    video.addEventListener('pause', onPause)
+    video.addEventListener('seeked', onSeek)
+    return () => {
+      video.removeEventListener('timeupdate', onTime)
+      video.removeEventListener('pause', onPause)
+      video.removeEventListener('seeked', onSeek)
+      window.speechSynthesis.cancel()
+    }
+  }, [dubAudioUrl, dubCues, dubLanguage, dubbed])
 
   useEffect(() => {
     const video = videoRef.current
@@ -179,10 +304,11 @@ export function Html5Player({ src, poster, title, captions = [], onProgress, onE
               src={track.src}
               srcLang={track.srclang}
               label={track.label}
-              default={track.srclang === 'en'}
+              default={captionLanguage ? track.srclang === captionLanguage : track.srclang === 'en'}
             />
           ))}
         </video>
+        {dubbed && dubAudioUrl ? <audio ref={dubRef} src={dubAudioUrl} preload="auto" /> : null}
         {buffered && playing ? (
           <div className="absolute inset-0 grid place-items-center text-sm text-white/80">Loading…</div>
         ) : null}

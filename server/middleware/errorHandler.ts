@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import { YoutubeServiceError } from '../services/youtube.ts'
+import { MovieServiceError } from '../services/movies/tmdb.ts'
 import { logSafe } from '../config/env.ts'
 
 export function notFound(_req: Request, res: Response): void {
@@ -10,6 +11,11 @@ export function errorHandler(error: unknown, req: Request, res: Response, _next:
   void _next
   if (error instanceof YoutubeServiceError) {
     logSafe('youtube_service_error', { code: error.code, status: error.status, path: req.path })
+    res.status(error.status).json({ error: error.message, code: error.code })
+    return
+  }
+  if (error instanceof MovieServiceError) {
+    logSafe('movie_service_error', { code: error.code, status: error.status, path: req.path })
     res.status(error.status).json({ error: error.message, code: error.code })
     return
   }

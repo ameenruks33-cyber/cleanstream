@@ -1,3 +1,5 @@
+import { registerBackgroundUpdateChecks, showDeviceNotification } from '@/lib/deviceUpdates'
+
 export const AUTO_UPDATE_INTERVAL_MS = 60_000
 export const VERSION_STORAGE_KEY = 'cleanstream.app-version'
 
@@ -8,11 +10,16 @@ export function shouldReloadForVersion(current: string | null, next: string | un
 }
 
 function rememberVersion(version: string): void {
+  localStorage.setItem(VERSION_STORAGE_KEY, version)
   sessionStorage.setItem(VERSION_STORAGE_KEY, version)
 }
 
 export function readRememberedVersion(): string | null {
-  return sessionStorage.getItem(VERSION_STORAGE_KEY)
+  const stored = localStorage.getItem(VERSION_STORAGE_KEY) ?? sessionStorage.getItem(VERSION_STORAGE_KEY)
+  if (stored && !localStorage.getItem(VERSION_STORAGE_KEY)) {
+    localStorage.setItem(VERSION_STORAGE_KEY, stored)
+  }
+  return stored
 }
 
 async function fetchPublishedVersion(): Promise<string | undefined> {
@@ -32,6 +39,11 @@ export async function checkPublishedVersion(reload: () => void): Promise<void> {
   }
   if (shouldReloadForVersion(current, next)) {
     rememberVersion(next)
+    await showDeviceNotification({
+      title: 'MyTube updated',
+      body: 'Tap to open the new version on this device.',
+      version: next,
+    })
     reload()
   }
 }
@@ -64,6 +76,12 @@ export async function startAutoUpdate(): Promise<void> {
     window.location.reload()
   }
 
+  window.addEventListener('appinstalled', () => {
+    void import('@/lib/deviceUpdates').then(({ enableUpdateNotifications }) => {
+      void enableUpdateNotifications()
+    })
+  })
+
   const poll = () => {
     void checkPublishedVersion(reload)
     if (navigator.serviceWorker?.controller) {
@@ -79,6 +97,17 @@ export async function startAutoUpdate(): Promise<void> {
       })
       listenForServiceWorker(registration, reload)
       void registration.update()
+      void registerBackgroundUpdateChecks(registration)
+      navigator.serviceWorker.addEventListener('message', (event: MessageEvent<{ type?: string; version?: string }>) => {
+        if (event.data?.type === 'MYTUBE_RELOAD') reload()
+        if (event.data?.type === 'MYTUBE_UPDATED') {
+          void showDeviceNotification({
+            title: 'MyTube updated',
+            body: 'Tap to open the new version on this device.',
+            version: event.data.version,
+          })
+        }
+      })
     } catch {
       /* Browsers without a secure context cannot register a worker. Version polling still runs. */
     }
@@ -87,6 +116,7 @@ export async function startAutoUpdate(): Promise<void> {
   void checkPublishedVersion(reload)
   window.setInterval(poll, AUTO_UPDATE_INTERVAL_MS)
   window.addEventListener('focus', poll)
+  window.addEventListener('pageshow', poll)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') poll()
   })

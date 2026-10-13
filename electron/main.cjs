@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, shell, safeStorage } = require('electron')
+const { app, BrowserWindow, ipcMain, Notification, session, shell, safeStorage } = require('electron')
 const { spawn } = require('node:child_process')
 const path = require('node:path')
 const fs = require('node:fs')
@@ -173,6 +173,31 @@ async function createWindow() {
     startApi()
     await waitForApi()
     await win.loadURL('http://127.0.0.1:8787')
+    void checkDesktopUpdate()
+    setInterval(() => void checkDesktopUpdate(), 15 * 60 * 1000)
+  }
+}
+
+const PRODUCTION_VERSION_URL = 'https://cleanstream-two.vercel.app/version.json'
+
+async function checkDesktopUpdate() {
+  try {
+    const [remoteRes, localRes] = await Promise.all([
+      fetch(PRODUCTION_VERSION_URL, { cache: 'no-store' }),
+      fetch('http://127.0.0.1:8787/version.json', { cache: 'no-store' }).catch(() => null),
+    ])
+    if (!remoteRes.ok) return
+    const remote = await remoteRes.json()
+    const local = localRes && localRes.ok ? await localRes.json() : {}
+    if (!remote.version || !local.version || String(remote.version) === String(local.version)) return
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'MyTube update',
+        body: 'A new signed desktop build is available. This app will not replace its own executable.',
+      }).show()
+    }
+  } catch {
+    /* version checks must not block playback */
   }
 }
 
