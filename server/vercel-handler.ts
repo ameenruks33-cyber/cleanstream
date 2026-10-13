@@ -1,5 +1,5 @@
-import { createApp } from '../server/app.ts'
-import { loadDotEnv, loadEnv } from '../server/config/env.ts'
+import { createApp } from './app.ts'
+import { loadDotEnv, loadEnv } from './config/env.ts'
 
 loadDotEnv()
 
