@@ -111,7 +111,7 @@ async function writeMarkedVersion(version) {
 }
 
 function shouldNotify(last, next, isWorkerUpdate) {
-  if (!next || String(next).includes('__CLEANSTREAM_VERSION__')) return false
+  if (!next || String(next).includes('CLEANSTREAM_UNRELEASED')) return false
   if (isWorkerUpdate) return last !== next
   return Boolean(last && last !== next)
 }
@@ -133,7 +133,7 @@ async function showUpdateNotification(version, title, body) {
 }
 
 async function notifyIfVersionChanged(version, isWorkerUpdate) {
-  if (!version || version.includes('__CLEANSTREAM_VERSION__')) return
+  if (!version || String(version).includes('CLEANSTREAM_UNRELEASED')) return
   const last = await readMarkedVersion()
   if (shouldNotify(last, version, Boolean(isWorkerUpdate))) {
     await showUpdateNotification(version)

@@ -15,7 +15,9 @@ function autoUpdatePlugin(): Plugin {
       const version = `${Date.now()}`
       const swPath = path.resolve(root, 'dist/sw.js')
       if (existsSync(swPath)) {
-        const source = readFileSync(swPath, 'utf8').replaceAll('__CLEANSTREAM_VERSION__', version)
+        const source = readFileSync(swPath, 'utf8')
+          .replaceAll("const CACHE = 'cleanstream-__CLEANSTREAM_VERSION__'", `const CACHE = 'cleanstream-${version}'`)
+          .replaceAll("const APP_VERSION = '__CLEANSTREAM_VERSION__'", `const APP_VERSION = '${version}'`)
         writeFileSync(swPath, source)
       }
       writeFileSync(

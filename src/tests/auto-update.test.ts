@@ -14,6 +14,7 @@ describe('auto update', () => {
     expect(shouldShowUpdateNotification('v1', 'v2', false)).toBe(true)
     expect(shouldShowUpdateNotification(null, 'v1', false)).toBe(false)
     expect(shouldShowUpdateNotification('v1', 'v1', true)).toBe(false)
+    expect(shouldShowUpdateNotification('111', '1791914614428', true)).toBe(true)
   })
 
   it('reloads only when a new published version appears', () => {
