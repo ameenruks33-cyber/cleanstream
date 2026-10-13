@@ -25,7 +25,7 @@ export function PlaylistsPage() {
       <div>
         <h1 className="font-display text-4xl">Playlists</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted">
-          Playlists store video references (YouTube ids or CleanStream ids), not downloaded media.
+          Playlists store video references (YouTube ids or MyTube ids), not downloaded media.
         </p>
       </div>
       <form onSubmit={onCreate} className="flex max-w-xl flex-col gap-3 sm:flex-row">

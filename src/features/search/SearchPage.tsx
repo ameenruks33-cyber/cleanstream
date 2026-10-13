@@ -67,11 +67,11 @@ export function SearchPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-muted">YouTube search</p>
-        <h1 className="mt-2 font-display text-4xl">{query ? `Results for “${query}”` : 'Search'}</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted">Worldwide search</p>
+        <h1 className="mt-2 font-display text-4xl">{query ? `Results for “${query}”` : 'Search any video'}</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted">
-          Type a title, topic, or channel. Paste a YouTube link to play it immediately. Videos open in the official
-          YouTube player.
+          Search any title, topic, language, or channel in the world. Paste a YouTube link to play it immediately.
+          Videos open in the official YouTube player.
         </p>
       </div>
       {directVideoId ? <Navigate to={youtubeWatchPath(directVideoId)} replace /> : null}
@@ -79,7 +79,7 @@ export function SearchPage() {
 
       {!query ? (
         <EmptyState
-          title="Search any YouTube video"
+          title="Search any video in the world"
           body="Type what you want to watch and press Search. Or paste a youtube.com / youtu.be link."
         />
       ) : null}

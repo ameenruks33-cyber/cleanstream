@@ -36,7 +36,7 @@ export function LibraryPage() {
     <div className="space-y-6">
       <div>
         <p className="text-xs uppercase tracking-[0.2em] text-muted">Independent player</p>
-        <h1 className="mt-2 font-display text-4xl">CleanStream library</h1>
+        <h1 className="mt-2 font-display text-4xl">MyTube library</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
           These titles are open-licensed films streamed from a public sample host. They are not YouTube extracts.
           Playback starts on the original file. If FFmpeg is installed, a background worker can create a 4K-sized copy

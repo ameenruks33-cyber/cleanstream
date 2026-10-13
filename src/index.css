@@ -9,8 +9,8 @@
   --color-line: #2c2824;
   --color-ink: #f4f1ea;
   --color-muted: #9a958c;
-  --color-ember: #e24b3b;
-  --color-tide: #5b8cff;
+  --color-ember: #ff4d8d;
+  --color-tide: #3ec4ff;
 }
 
 html.light {
@@ -20,14 +20,39 @@ html.light {
   --color-line: #e4d9c8;
   --color-ink: #1b1714;
   --color-muted: #6f675d;
-  --color-ember: #c4372c;
-  --color-tide: #2f62d9;
+  --color-ember: #e23d78;
+  --color-tide: #1f8fd9;
 }
 
 html,
 body,
 #root {
   min-height: 100%;
+  min-height: 100dvh;
+}
+
+.app-native,
+.app-native body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-native body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.app-native input,
+.app-native textarea,
+.app-native [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.app-immersive,
+.app-immersive body {
+  overflow: hidden;
+  background: #000;
 }
 
 body {
@@ -77,4 +102,60 @@ select {
 :focus-visible {
   outline: 2px solid var(--color-tide);
   outline-offset: 3px;
+}
+
+.mytube-wave {
+  display: inline-flex;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.mytube-wave-letter {
+  display: inline-block;
+  animation: mytube-wave 1.7s ease-in-out infinite;
+  will-change: transform;
+}
+
+.mytube-wave-letter.is-white {
+  color: #f8fafc;
+}
+
+.mytube-wave-letter.is-grad {
+  background-image: linear-gradient(90deg, #3ec4ff, #7a5bff, #ff4d9a, #ff7a32);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.mytube-wave-svg {
+  display: block;
+  height: 10px;
+  overflow: visible;
+}
+
+.mytube-wave-path {
+  stroke-dasharray: 28 10;
+  animation: mytube-wave-flow 1.35s linear infinite;
+}
+
+@keyframes mytube-wave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.22em);
+  }
+}
+
+@keyframes mytube-wave-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -38;
+  }
 }

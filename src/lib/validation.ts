@@ -72,7 +72,7 @@ export function validateOwnedVideoId(raw: string): ValidationResult<string> {
   }
   const id = raw.trim()
   if (!/^[a-z0-9-]{3,64}$/.test(id)) {
-    return { ok: false, error: 'That CleanStream video id is not valid.', code: 'INVALID_VIDEO_ID' }
+    return { ok: false, error: 'That MyTube video id is not valid.', code: 'INVALID_VIDEO_ID' }
   }
   return { ok: true, value: id }
 }

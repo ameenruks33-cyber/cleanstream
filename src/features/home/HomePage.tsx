@@ -7,6 +7,7 @@ import { ErrorState } from '@/components/ErrorState'
 import { VideoGrid } from '@/components/VideoGrid'
 import { VideoGridSkeleton } from '@/components/Skeleton'
 import { Button } from '@/components/Button'
+import { BrandLogo, WaveLine, WaveName } from '@/components/Brand'
 import { ownedVideos } from '@/data/ownedVideos'
 import { fetchHealth, searchYoutube } from '@/services/api'
 import type { YoutubeVideo } from '@/types'
@@ -44,20 +45,27 @@ export function HomePage() {
   return (
     <div className="space-y-10">
       <section className="overflow-hidden rounded-[2rem] border border-line bg-panel p-6 md:p-10">
-        <p className="text-xs uppercase tracking-[0.24em] text-muted">Quiet by design</p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl leading-tight md:text-6xl">
-          Discover videos without the noise. CleanStream adds none of its own ads.
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
-          Paste any YouTube link in the search bar to watch it. YouTube titles play in the official embed — YouTube may
-          still show its advertisements. Licensed CleanStream titles use a separate HTML5 player with no ads.
+        <div className="flex flex-wrap items-center gap-5">
+          <BrandLogo className="h-24 w-24 md:h-28 md:w-28" />
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-muted">Watch worldwide</p>
+            <WaveName as="h1" className="mt-2 text-5xl md:text-7xl" />
+            <WaveLine className="mt-2 w-40 md:w-56" />
+          </div>
+        </div>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-ink">
+          Search any video in the world. MyTube adds none of its own ads.
+        </p>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
+          Type a title, topic, or paste any YouTube link. Videos play in the official YouTube player — YouTube may still
+          show its advertisements. Licensed MyTube titles use a separate HTML5 player with no ads.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/library">
-            <Button variant="primary">Open CleanStream library</Button>
-          </Link>
           <Link to="/search">
-            <Button variant="ghost">Search YouTube</Button>
+            <Button variant="primary">Search any video</Button>
+          </Link>
+          <Link to="/library">
+            <Button variant="ghost">Open MyTube library</Button>
           </Link>
         </div>
       </section>
@@ -78,7 +86,7 @@ export function HomePage() {
 
       <section className="space-y-4">
         <div className="flex items-end justify-between">
-          <h2 className="font-display text-2xl">Licensed on CleanStream</h2>
+          <h2 className="font-display text-2xl">Licensed on MyTube</h2>
           <Link to="/library" className="text-sm text-muted hover:text-ink">
             Full library
           </Link>
@@ -96,7 +104,7 @@ export function HomePage() {
         {!loading && !error && trending.length === 0 ? (
           <EmptyState
             title="No YouTube results yet"
-            body="Configure YOUTUBE_API_KEY on the server, or browse the CleanStream library."
+            body="Configure YOUTUBE_API_KEY on the server, or browse the MyTube library."
             action={
               <Link to="/library">
                 <Button variant="ghost">Go to library</Button>

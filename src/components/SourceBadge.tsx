@@ -10,7 +10,7 @@ export function SourceBadge({ source, className }: { source: VideoSource; classN
         className,
       )}
     >
-      {source === 'youtube' ? 'YouTube' : 'CleanStream'}
+      {source === 'youtube' ? 'YouTube' : 'MyTube'}
     </span>
   )
 }

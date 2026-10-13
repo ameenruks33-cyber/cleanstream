@@ -1,17 +1,67 @@
+import { useId } from 'react'
 import { cn } from '@/lib/cn'
+
+export const APP_NAME = 'MyTube'
+export const LOGO_SRC = '/logo.jpg'
+
+const LETTERS = APP_NAME.split('')
 
 export function BrandMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn('h-8 w-8', className)} aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill="currentColor" className="text-raised" />
+    <img
+      src={LOGO_SRC}
+      alt=""
+      className={cn('h-9 w-9 rounded-2xl bg-black object-cover object-[50%_28%]', className)}
+    />
+  )
+}
+
+export function BrandLogo({ className }: { className?: string }) {
+  return <img src={LOGO_SRC} alt="" className={cn('rounded-3xl bg-black object-contain', className)} />
+}
+
+export function WaveName({
+  as: Tag = 'span',
+  className,
+}: {
+  as?: 'span' | 'p' | 'h1'
+  className?: string
+}) {
+  return (
+    <Tag className={cn('mytube-wave', className)} aria-label={APP_NAME}>
+      {LETTERS.map((letter, index) => (
+        <span
+          key={`${letter}-${index}`}
+          className={cn('mytube-wave-letter', index < 2 ? 'is-white' : 'is-grad')}
+          style={{ animationDelay: `${index * 0.11}s` }}
+          aria-hidden="true"
+        >
+          {letter}
+        </span>
+      ))}
+    </Tag>
+  )
+}
+
+export function WaveLine({ className }: { className?: string }) {
+  const gradientId = useId()
+  return (
+    <svg className={cn('mytube-wave-svg', className)} viewBox="0 0 140 14" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="140" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#3ec4ff" />
+          <stop offset="45%" stopColor="#8a4dff" />
+          <stop offset="100%" stopColor="#ff7a32" />
+        </linearGradient>
+      </defs>
       <path
-        d="M5 21c5-9 7.5-9 12.5 0s7.5 9 12.5 0"
+        className="mytube-wave-path"
+        d="M0 9 Q 17.5 1 35 9 T 70 9 T 105 9 T 140 9"
         fill="none"
-        stroke="#E24B3B"
-        strokeWidth="2.4"
+        stroke={`url(#${gradientId})`}
+        strokeWidth="2.6"
         strokeLinecap="round"
       />
-      <circle cx="22" cy="10" r="2.4" fill="#5B8CFF" />
     </svg>
   )
 }
@@ -21,9 +71,9 @@ export function Brand({ collapsed = false }: { collapsed?: boolean }) {
     <div className="flex items-center gap-3 text-ink">
       <BrandMark />
       {!collapsed ? (
-        <div className="leading-tight">
-          <p className="font-display text-lg tracking-tight">CleanStream</p>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted">Quiet video</p>
+        <div className="min-w-0 leading-tight">
+          <WaveName as="p" className="text-lg" />
+          <WaveLine className="mt-1 w-24" />
         </div>
       ) : null}
     </div>

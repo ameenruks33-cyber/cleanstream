@@ -175,7 +175,7 @@ async function fetchJson(url: URL): Promise<unknown | null> {
       redirect: 'error',
       headers: {
         Accept: 'application/json',
-        'User-Agent': 'CleanStream/1.0',
+        'User-Agent': 'MyTube/1.0',
       },
       signal: controller.signal,
     })

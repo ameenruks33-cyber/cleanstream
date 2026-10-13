@@ -9,7 +9,7 @@ export function healthRouter(env: Env): Router {
     const enhance = detectBinaries()
     res.json({
       ok: true,
-      name: 'cleanstream',
+      name: 'mytube',
       youtubeConfigured: isYoutubeConfigured(env),
       supabaseConfigured: Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY),
       enhance,

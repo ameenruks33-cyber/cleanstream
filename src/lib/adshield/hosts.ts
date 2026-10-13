@@ -1,4 +1,4 @@
-/** Hosts required for CleanStream, licensed media, fonts, auth, and the official YouTube player. */
+/** Hosts required for MyTube, licensed media, fonts, auth, and the official YouTube player. */
 export const PROTECTED_HOSTS = [
   'localhost',
   'youtube.com',

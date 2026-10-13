@@ -76,7 +76,7 @@ export function AdShieldPage() {
         <p className="text-xs uppercase tracking-[0.2em] text-muted">Privacy</p>
         <h1 className="mt-2 font-display text-4xl">Ad Shield</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Ad Shield blocks third-party advertising and optional tracking requests inside CleanStream. It does not remove
+          Ad Shield blocks third-party advertising and optional tracking requests inside MyTube. It does not remove
           advertisements from YouTube’s official player. Licensed library videos play without ad SDKs.
         </p>
       </div>
@@ -87,13 +87,13 @@ export function AdShieldPage() {
           checked={settings.enabled}
           onChange={(value) => updateSettings({ enabled: value })}
           label="Ad Shield"
-          description="Master switch. When off, CleanStream does not filter third-party ad or tracker requests."
+          description="Master switch. When off, MyTube does not filter third-party ad or tracker requests."
         />
         <Switch
           checked={settings.blockThirdPartyAds}
           onChange={(value) => updateSettings({ blockThirdPartyAds: value })}
           label="Block third-party ad components"
-          description="Stops known advertising networks from loading in CleanStream’s own interface."
+          description="Stops known advertising networks from loading in MyTube’s own interface."
         />
         <Switch
           checked={settings.trackingProtection}
@@ -134,7 +134,7 @@ export function AdShieldPage() {
       <section className="rounded-3xl border border-line bg-panel p-6">
         <h2 className="font-display text-2xl">Domain lists</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          One hostname per line. Allowlist always wins. These lists apply to CleanStream and, in the desktop app, to
+          One hostname per line. Allowlist always wins. These lists apply to MyTube and, in the desktop app, to
           supported web requests — never to YouTube’s official player origins.
         </p>
         <form className="mt-4 space-y-4" onSubmit={onSaveLists}>
@@ -186,7 +186,7 @@ export function AdShieldPage() {
         <p className="mt-2 text-sm leading-6 text-muted">
           {desktop
             ? 'The Windows app can refresh EasyList-style host rules. Element-hiding rules and YouTube player origins are ignored.'
-            : 'Full browser-level filtering runs in the CleanStream desktop app. In Chrome, Ad Shield only filters requests made by this site.'}
+            : 'Full browser-level filtering runs in the MyTube desktop app. In Chrome, Ad Shield only filters requests made by this site.'}
         </p>
         <Button variant="ghost" className="mt-4" onClick={() => void onUpdateLists()}>
           Check filter-list updates
@@ -197,9 +197,9 @@ export function AdShieldPage() {
       <section className="rounded-3xl border border-line bg-panel p-6 text-sm leading-6 text-muted">
         <h2 className="font-display text-2xl text-ink">What is and is not blocked</h2>
         <ul className="mt-3 list-disc space-y-2 pl-5">
-          <li>Blocked: third-party ad networks and optional trackers in CleanStream’s own UI.</li>
+          <li>Blocked: third-party ad networks and optional trackers in MyTube’s own UI.</li>
           <li>Ad-free: licensed library files in the HTML5 player — no advertising SDK.</li>
-          <li>Not blocked: advertisements inside YouTube’s official embed. CleanStream does not intercept or rewrite that player.</li>
+          <li>Not blocked: advertisements inside YouTube’s official embed. MyTube does not intercept or rewrite that player.</li>
           <li>Never blocked: app APIs, captions, fonts, licensed media, sign-in, and YouTube player origins.</li>
         </ul>
         <p className="mt-4">

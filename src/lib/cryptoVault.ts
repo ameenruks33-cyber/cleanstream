@@ -59,7 +59,7 @@ export async function encryptString(key: CryptoKey, plaintext: string): Promise<
 
 export async function decryptString(key: CryptoKey, payload: string): Promise<string> {
   const [version, ivPart, dataPart] = payload.split('.')
-  if (version !== 'cs1' || !ivPart || !dataPart) throw new Error('Vault data is not a CleanStream ciphertext.')
+  if (version !== 'cs1' || !ivPart || !dataPart) throw new Error('Vault data is not a MyTube ciphertext.')
   const plain = await subtle().decrypt(
     { name: 'AES-GCM', iv: toArrayBuffer(b64ToBytes(ivPart)) },
     key,
@@ -168,7 +168,7 @@ async function ensureDeviceKey(): Promise<CryptoKey> {
     return key
   }
   if (secret.type === 'passphrase') {
-    throw Object.assign(new Error('Unlock CleanStream with your passphrase.'), { code: VAULT_LOCKED_ERROR })
+    throw Object.assign(new Error('Unlock MyTube with your passphrase.'), { code: VAULT_LOCKED_ERROR })
   }
   const key = await importDataKey(secret.jwk)
   memory.sessionKey = key

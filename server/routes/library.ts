@@ -17,7 +17,7 @@ export function libraryRouter(): Router {
     }
     const video = getOwnedVideo(id.value)
     if (!video) {
-      res.status(404).json({ error: 'CleanStream title not found.', code: 'VIDEO_NOT_FOUND' })
+      res.status(404).json({ error: 'MyTube title not found.', code: 'VIDEO_NOT_FOUND' })
       return
     }
     res.json({ video })

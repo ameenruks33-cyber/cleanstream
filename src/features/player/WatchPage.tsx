@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Heart, ListPlus } from 'lucide-react'
 import { useLibrary } from '@/app/LibraryProvider'
 import { Button } from '@/components/Button'
@@ -9,15 +9,36 @@ import { VideoGridSkeleton } from '@/components/Skeleton'
 import { Modal } from '@/components/Modal'
 import { YouTubeEmbed } from '@/features/player/YouTubeEmbed'
 import { Html5Player } from '@/features/player/Html5Player'
+import { WatchNav } from '@/features/player/WatchNav'
 import { formatCompactNumber, formatDate, formatDuration } from '@/lib/format'
 import { validateOwnedVideoId, validateVideoSource, validateYoutubeVideoId } from '@/lib/validation'
 import { enhancedMediaUrl, fetchEnhanceJob, fetchOwnedVideo, fetchYoutubeVideo, inspectVideoQuality, queueEnhancement } from '@/services/api'
 import { EnhanceStatus } from '@/features/player/EnhanceStatus'
+import { ownedVideos } from '@/data/ownedVideos'
+import {
+  ensureCurrentInQueue,
+  neighborsInQueue,
+  readWatchQueue,
+  videoKey,
+  watchPath,
+  type WatchQueue,
+  type WatchQueueItem,
+} from '@/lib/watchQueue'
+import { useImmersive } from '@/app/ImmersiveProvider'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { shouldAutoEnterFullView, shouldAutoExitFullView } from '@/lib/displayMode'
 import type { EnhanceJob, OwnedVideo, QualityInspection, VideoRef, YoutubeVideo } from '@/types'
 
 export function WatchPage() {
   const { source = '', id = '' } = useParams()
+  const navigate = useNavigate()
   const library = useLibrary()
+  const immersive = useImmersive()
+  const handheld = useMediaQuery('(pointer: coarse)')
+  const landscape = useMediaQuery('(orientation: landscape)')
+  const playerBox = useRef<HTMLDivElement>(null)
+  const autoEntered = useRef(false)
+  const skipAuto = useRef(false)
   const [youtube, setYoutube] = useState<YoutubeVideo | null>(null)
   const [owned, setOwned] = useState<OwnedVideo | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -27,6 +48,7 @@ export function WatchPage() {
   const [inspection, setInspection] = useState<QualityInspection | null>(null)
   const [job, setJob] = useState<EnhanceJob | null>(null)
   const [usingEnhanced, setUsingEnhanced] = useState(false)
+  const [queue, setQueue] = useState<WatchQueue>(() => readWatchQueue())
 
   useEffect(() => {
     let cancelled = false
@@ -110,7 +132,76 @@ export function WatchPage() {
   }, [job?.jobId, job?.status])
 
   const video: VideoRef | null = youtube ?? owned
-  const favorite = video ? library.isFavorite(video) : false
+  const staleVideo = Boolean(video && (video.id !== id || video.source !== source))
+  const favorite = video && !staleVideo ? library.isFavorite(video) : false
+  const { previous, next, index } = neighborsInQueue(queue.items, source, id)
+  const upcoming = index >= 0 ? queue.items.slice(index + 1, index + 8) : queue.items.slice(0, 8)
+
+  function goBack() {
+    if (immersive.active) void immersive.exit()
+    navigate(queue.origin || '/')
+  }
+
+  function goTo(item: WatchQueueItem) {
+    navigate(watchPath(item))
+  }
+
+  async function toggleFullView() {
+    if (immersive.active) {
+      skipAuto.current = true
+      autoEntered.current = false
+      await immersive.exit()
+      return
+    }
+    skipAuto.current = false
+    await immersive.enter(playerBox.current)
+  }
+
+  useEffect(() => {
+    if (
+      shouldAutoEnterFullView({
+        handheld,
+        landscape,
+        active: immersive.active,
+        skipped: skipAuto.current,
+      })
+    ) {
+      autoEntered.current = true
+      void immersive.enter(playerBox.current)
+      return
+    }
+    if (shouldAutoExitFullView({ handheld, landscape, autoEntered: autoEntered.current })) {
+      autoEntered.current = false
+      skipAuto.current = false
+      void immersive.exit()
+    }
+    if (!landscape) skipAuto.current = false
+  }, [handheld, immersive, landscape])
+
+  useEffect(() => {
+    if (!video) {
+      setQueue(readWatchQueue())
+      return
+    }
+    const extras = video.source === 'cleanstream' ? ownedVideos : library.state.history
+    setQueue(ensureCurrentInQueue(video, extras))
+  }, [library.state.history, video])
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
+      if (event.key === 'n' && next) {
+        event.preventDefault()
+        goTo(next)
+      } else if (event.key === 'p' && previous) {
+        event.preventDefault()
+        goTo(previous)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [next, previous])
 
   useEffect(() => {
     if (video) library.addToHistory(video)
@@ -123,29 +214,99 @@ export function WatchPage() {
     [youtube],
   )
 
-  if (loading) return <VideoGridSkeleton count={1} />
-  if (error || !video) return <ErrorState title="Unavailable" body={error ?? 'This video could not be opened.'} />
-
-  return (
-    <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+  if (loading || staleVideo) {
+    return (
       <div className="space-y-5">
-        {youtube ? <YouTubeEmbed videoId={youtube.id} title={youtube.title} /> : null}
-        {owned ? (
-          <div className="space-y-2">
+        <WatchNav
+          onBack={goBack}
+          previousTitle={previous?.title}
+          nextTitle={next?.title}
+          onPrevious={previous ? () => goTo(previous) : undefined}
+          onNext={next ? () => goTo(next) : undefined}
+          fullView={immersive.active}
+          onFullView={() => void toggleFullView()}
+        />
+        <VideoGridSkeleton count={1} />
+      </div>
+    )
+  }
+  if (error || !video) {
+    return (
+      <div className="space-y-5">
+        <WatchNav onBack={goBack} fullView={immersive.active} onFullView={() => void toggleFullView()} />
+        <ErrorState title="Unavailable" body={error ?? 'This video could not be opened.'} />
+      </div>
+    )
+  }
+
+  if (immersive.active) {
+    return (
+      <div className="relative flex h-[100dvh] w-full flex-col bg-black">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <div className="pointer-events-auto">
+            <WatchNav
+              onBack={goBack}
+              previousTitle={previous?.title}
+              nextTitle={next?.title}
+              onPrevious={previous ? () => goTo(previous) : undefined}
+              onNext={next ? () => goTo(next) : undefined}
+              fullView
+              onFullView={() => void toggleFullView()}
+            />
+          </div>
+        </div>
+        <div ref={playerBox} className="min-h-0 flex-1">
+          {youtube ? <YouTubeEmbed videoId={youtube.id} title={youtube.title} immersive /> : null}
+          {owned ? (
             <Html5Player
               src={usingEnhanced && job?.outputId ? enhancedMediaUrl(job.outputId) : owned.src}
               poster={owned.poster}
               title={owned.title}
               captions={owned.captions}
               onProgress={(seconds) => library.addToHistory(owned, seconds)}
+              onEnded={next ? () => goTo(next) : undefined}
+              immersive
             />
+          ) : null}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="space-y-5">
+        <WatchNav
+          onBack={goBack}
+          previousTitle={previous?.title}
+          nextTitle={next?.title}
+          onPrevious={previous ? () => goTo(previous) : undefined}
+          onNext={next ? () => goTo(next) : undefined}
+          fullView={immersive.active}
+          onFullView={() => void toggleFullView()}
+        />
+        <div ref={playerBox}>
+          {youtube ? <YouTubeEmbed videoId={youtube.id} title={youtube.title} /> : null}
+          {owned ? (
+            <Html5Player
+              src={usingEnhanced && job?.outputId ? enhancedMediaUrl(job.outputId) : owned.src}
+              poster={owned.poster}
+              title={owned.title}
+              captions={owned.captions}
+              onProgress={(seconds) => library.addToHistory(owned, seconds)}
+              onEnded={next ? () => goTo(next) : undefined}
+            />
+          ) : null}
+        </div>
+        {owned ? (
+          <div className="space-y-2">
             <EnhanceStatus
               inspection={inspection}
               job={job}
               usingEnhanced={usingEnhanced}
               onToggle={() => setUsingEnhanced((value) => !value)}
             />
-            <p className="text-xs text-muted">Licensed CleanStream file — HTML5 player with no advertising SDK.</p>
+            <p className="text-xs text-muted">Licensed MyTube file — HTML5 player with no advertising SDK.</p>
           </div>
         ) : null}
 
@@ -174,7 +335,7 @@ export function WatchPage() {
 
         {youtubeWatchUrl ? (
           <p className="text-sm text-muted">
-            YouTube may display its own advertisements in the official player. CleanStream does not overlay, block,
+            YouTube may display its own advertisements in the official player. MyTube does not overlay, block,
             extract, or upscale YouTube streams. Use the official player’s quality settings
             {inspection?.reason ? ` — ${inspection.reason}` : '.'}{' '}
             <a className="text-tide" href={youtubeWatchUrl} target="_blank" rel="noreferrer">
@@ -183,7 +344,7 @@ export function WatchPage() {
           </p>
         ) : (
           <p className="text-sm text-muted">
-            This is a CleanStream-hosted file. License: {owned?.license}. It is not extracted from YouTube.
+            This is a MyTube-hosted file. License: {owned?.license}. It is not extracted from YouTube.
           </p>
         )}
 
@@ -195,6 +356,26 @@ export function WatchPage() {
       </div>
 
       <aside className="space-y-4">
+        <h2 className="font-display text-xl">Up next</h2>
+        {upcoming.length === 0 ? (
+          <p className="text-sm text-muted">This is the last title in the current list.</p>
+        ) : (
+          upcoming.map((item) => (
+            <Link
+              key={videoKey(item)}
+              to={watchPath(item)}
+              className="flex gap-3 rounded-2xl border border-line bg-panel p-2 hover:border-muted"
+            >
+              {item.thumbnailUrl ? (
+                <img src={item.thumbnailUrl} alt="" className="h-16 w-28 shrink-0 rounded-xl object-cover" />
+              ) : null}
+              <span className="min-w-0">
+                <span className="line-clamp-2 block text-sm font-medium">{item.title}</span>
+                <span className="mt-1 block text-xs text-muted">{item.channelTitle}</span>
+              </span>
+            </Link>
+          ))
+        )}
         <h2 className="font-display text-xl">Your lists</h2>
         {library.state.playlists.length === 0 ? (
           <p className="text-sm text-muted">Create a playlist to keep references — never downloaded copies.</p>

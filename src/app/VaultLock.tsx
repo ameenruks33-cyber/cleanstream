@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { BrandMark } from '@/components/Brand'
+import { BrandMark, WaveLine, WaveName } from '@/components/Brand'
 import { Button } from '@/components/Button'
 import { unlockVault, vaultStatus } from '@/lib/cryptoVault'
 
@@ -50,7 +50,8 @@ export function VaultLock({ children }: { children: ReactNode }) {
           <BrandMark className="h-16 w-16" />
         </div>
         <p className="mt-6 text-center text-xs uppercase tracking-[0.22em] text-muted">Encrypted vault</p>
-        <h1 className="mt-3 text-center font-display text-4xl">Unlock CleanStream</h1>
+        <WaveName as="h1" className="mt-3 justify-center text-4xl" />
+        <WaveLine className="mx-auto mt-2 w-36" />
         <p className="mt-3 text-center text-sm leading-7 text-muted">
           Local favorites, history, and Ad Shield settings are encrypted with AES-256-GCM. Enter the passphrase for this
           device.

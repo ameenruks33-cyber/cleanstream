@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { BrandMark } from '@/components/Brand'
+import { APP_NAME, BrandLogo, WaveLine, WaveName } from '@/components/Brand'
 import { Button } from '@/components/Button'
 import { isDesktopElectron, isIosDevice, isStandaloneDisplay } from '@/lib/pwa'
 
@@ -70,23 +70,22 @@ export function InstallGate({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-6 text-ink">
       <div className="w-full max-w-md rounded-[2rem] border border-line bg-panel p-8 text-center shadow-2xl">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center">
-          <BrandMark className="h-16 w-16" />
-        </div>
+        <BrandLogo className="mx-auto h-36 w-36" />
         <p className="mt-6 text-xs uppercase tracking-[0.22em] text-muted">Install on this device</p>
-        <h1 className="mt-3 font-display text-4xl">CleanStream</h1>
+        <WaveName as="h1" className="mt-3 justify-center text-4xl" />
+        <WaveLine className="mx-auto mt-2 w-40" />
         <p className="mt-3 text-sm leading-7 text-muted">
-          Opening this link installs CleanStream as an app on your phone or computer. YouTube still uses the official
-          player.
+          Install {APP_NAME} on this phone or tablet. After that it opens from your home screen as its own app — not
+          inside Chrome or Safari. Search any video in the world. YouTube still uses the official player.
         </p>
         {ios ? (
           <p className="mt-4 rounded-2xl bg-raised px-4 py-3 text-left text-sm leading-6 text-ink">
-            On iPhone or iPad: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. Safari cannot
-            install automatically.
+            On iPhone or iPad: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. That installs
+            MyTube as an app. Safari cannot install automatically.
           </p>
         ) : (
           <Button className="mt-6 w-full" variant="primary" onClick={() => void installNow()} disabled={prompting}>
-            {prompting ? 'Waiting for system installer…' : 'Install CleanStream'}
+            {prompting ? 'Waiting for system installer…' : `Install ${APP_NAME}`}
           </Button>
         )}
         <Button className="mt-3 w-full" variant="ghost" onClick={continueInBrowser}>

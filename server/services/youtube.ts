@@ -42,7 +42,7 @@ export function parseYoutubeError(status: number, payload: YoutubeErrorPayload |
   const message = payload?.error?.message ?? 'YouTube API request failed.'
   if (status === 403 && /quota/i.test(`${reason} ${message}`)) {
     return new YoutubeServiceError(
-      'YouTube API quota is exhausted for now. Try again later, or browse CleanStream library videos.',
+      'YouTube API quota is exhausted for now. Try again later, or browse MyTube library videos.',
       429,
       'QUOTA_EXCEEDED',
     )
@@ -179,7 +179,7 @@ async function fetchOEmbedResponse(id: string): Promise<Response | null> {
       redirect: 'error',
       headers: {
         Accept: 'application/json',
-        'User-Agent': 'CleanStream/1.0',
+        'User-Agent': 'MyTube/1.0',
       },
     })
   } catch {

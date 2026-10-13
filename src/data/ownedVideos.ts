@@ -15,7 +15,7 @@ export const ownedVideos: OwnedVideo[] = [
     duration: 'PT9M56S',
     license: 'Creative Commons Attribution 3.0 — Blender Foundation',
     description:
-      'An open movie from the Blender Foundation. CleanStream streams this file from a public sample host; it is not a YouTube extract.',
+      'An open movie from the Blender Foundation. MyTube streams this file from a public sample host; it is not a YouTube extract.',
     captions: [
       {
         src: '/captions/big-buck-bunny.en.vtt',
@@ -35,7 +35,7 @@ export const ownedVideos: OwnedVideo[] = [
     publishedAt: '2006-03-24',
     duration: 'PT10M53S',
     license: 'Creative Commons Attribution 2.5 — Blender Foundation / Netherlands Media Art Institute',
-    description: 'The first open movie made with Blender, hosted here as a licensed CleanStream library title.',
+    description: 'The first open movie made with Blender, hosted here as a licensed MyTube library title.',
   },
   {
     id: 'sintel',
@@ -61,7 +61,7 @@ export const ownedVideos: OwnedVideo[] = [
     publishedAt: '2012-09-26',
     duration: 'PT12M14S',
     license: 'Creative Commons Attribution 3.0 — Blender Foundation',
-    description: 'A live-action and CGI short from the Blender Institute. Served as an original CleanStream file.',
+    description: 'A live-action and CGI short from the Blender Institute. Served as an original MyTube file.',
   },
 ]
 

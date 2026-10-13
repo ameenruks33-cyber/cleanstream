@@ -1,4 +1,4 @@
-# CleanStream
+# MyTube
 
 A distraction-free video app for the browser, with an optional Windows desktop build.
 

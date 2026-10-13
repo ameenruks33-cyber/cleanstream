@@ -14,7 +14,7 @@ export function HistoryPage() {
         <div>
           <h1 className="font-display text-4xl">History</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            History is stored locally for guests, and synced if you sign in. CleanStream stores references, not media
+            History is stored locally for guests, and synced if you sign in. MyTube stores references, not media
             files.
           </p>
         </div>

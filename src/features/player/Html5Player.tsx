@@ -11,6 +11,8 @@ import {
 import type { CaptionTrack } from '@/types'
 import { formatClock } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { enterIosVideoFullscreen } from '@/lib/displayMode'
+import { isIosDevice } from '@/lib/pwa'
 
 type Props = {
   src: string
@@ -18,11 +20,13 @@ type Props = {
   title: string
   captions?: CaptionTrack[]
   onProgress?: (seconds: number, duration: number) => void
+  onEnded?: () => void
+  immersive?: boolean
 }
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 
-export function Html5Player({ src, poster, title, captions = [], onProgress }: Props) {
+export function Html5Player({ src, poster, title, captions = [], onProgress, onEnded, immersive = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -51,12 +55,14 @@ export function Html5Player({ src, poster, title, captions = [], onProgress }: P
     }
     const onPause = () => setPlaying(false)
     const onErr = () => setError('This file could not be played. Check the media URL and format.')
+    const onFinish = () => onEnded?.()
     video.addEventListener('timeupdate', onTime)
     video.addEventListener('loadedmetadata', onMeta)
     video.addEventListener('waiting', onWait)
     video.addEventListener('playing', onPlay)
     video.addEventListener('pause', onPause)
     video.addEventListener('error', onErr)
+    video.addEventListener('ended', onFinish)
     return () => {
       video.removeEventListener('timeupdate', onTime)
       video.removeEventListener('loadedmetadata', onMeta)
@@ -64,8 +70,9 @@ export function Html5Player({ src, poster, title, captions = [], onProgress }: P
       video.removeEventListener('playing', onPlay)
       video.removeEventListener('pause', onPause)
       video.removeEventListener('error', onErr)
+      video.removeEventListener('ended', onFinish)
     }
-  }, [onProgress])
+  }, [onProgress, onEnded])
 
   useEffect(() => {
     const video = videoRef.current
@@ -129,6 +136,11 @@ export function Html5Player({ src, poster, title, captions = [], onProgress }: P
 
   async function toggleFullscreen() {
     const box = boxRef.current
+    const video = videoRef.current
+    if (isIosDevice() && enterIosVideoFullscreen(video)) {
+      setFullscreen(true)
+      return
+    }
     if (!box) return
     if (document.fullscreenElement) {
       await document.exitFullscreen()
@@ -142,13 +154,16 @@ export function Html5Player({ src, poster, title, captions = [], onProgress }: P
   return (
     <div
       ref={boxRef}
-      className="overflow-hidden rounded-3xl border border-line bg-black"
+      className={cn(
+        'overflow-hidden bg-black',
+        immersive ? 'h-full min-h-0 rounded-none border-0' : 'rounded-3xl border border-line',
+      )}
       role="region"
       aria-label={`${title} player`}
       data-ad-free="true"
       data-ad-integrations="none"
     >
-      <div className="relative aspect-video">
+      <div className={cn('relative', immersive ? 'h-full' : 'aspect-video')}>
         <video
           ref={videoRef}
           className="absolute inset-0 h-full w-full bg-black"

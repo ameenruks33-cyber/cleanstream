@@ -13,7 +13,7 @@ export function ConsentBanner() {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-2xl rounded-2xl border border-line bg-panel/95 p-4 shadow-2xl backdrop-blur md:left-auto">
       <p className="text-sm leading-6 text-muted">
-        CleanStream does not insert third-party ads and does not collect analytics unless you opt in. Watch history and
+        MyTube does not insert third-party ads and does not collect analytics unless you opt in. Watch history and
         lists stay on this device unless you sign in.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">

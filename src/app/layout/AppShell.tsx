@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from '@/app/layout/Sidebar'
@@ -6,11 +6,27 @@ import { TopBar } from '@/app/layout/TopBar'
 import { MobileNav } from '@/app/layout/MobileNav'
 import { ConsentBanner } from '@/components/ConsentBanner'
 import { Brand } from '@/components/Brand'
+import { useImmersive } from '@/app/ImmersiveProvider'
 
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const immersive = useImmersive()
+
+  useEffect(() => {
+    if (!location.pathname.startsWith('/watch') && immersive.active) {
+      void immersive.exit()
+    }
+  }, [immersive, location.pathname])
+
+  if (immersive.active) {
+    return (
+      <div className="h-[100dvh] overflow-hidden bg-black text-ink">
+        <Outlet />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-canvas text-ink">

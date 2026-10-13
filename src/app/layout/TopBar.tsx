@@ -27,7 +27,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-canvas/80 px-4 py-3 backdrop-blur">
+    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-canvas/80 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
       <Button className="px-2 md:hidden" aria-label="Open navigation" onClick={onMenu}>
         <Menu className="h-5 w-5" />
       </Button>
@@ -37,8 +37,8 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search any YouTube video, or paste a link"
-            aria-label="Search YouTube"
+            placeholder="Search any video in the world, or paste a link"
+            aria-label="Search any video"
             className="w-full rounded-full border border-line bg-panel py-2.5 pl-10 pr-4 text-sm outline-none placeholder:text-muted focus:border-tide"
           />
         </div>

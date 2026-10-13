@@ -70,7 +70,7 @@ export function enhanceRouter(): Router {
   router.post('/', (req, res) => {
     const parsed = EnhanceBody.safeParse(req.body)
     if (!parsed.success) {
-      res.status(400).json({ error: 'Provide a CleanStream fileId.', code: 'INVALID_VIDEO_ID' })
+      res.status(400).json({ error: 'Provide a MyTube fileId.', code: 'INVALID_VIDEO_ID' })
       return
     }
     const fileId = parsed.data.fileId

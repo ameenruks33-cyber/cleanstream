@@ -2,8 +2,8 @@
   "name": "cleanstream",
   "private": true,
   "version": "1.0.0",
-  "description": "CleanStream — distraction-free video discovery with official YouTube playback and an ad-free player for licensed videos.",
-  "author": "CleanStream",
+  "description": "MyTube — search any video in the world with official YouTube playback and an ad-free player for licensed videos.",
+  "author": "MyTube",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -62,8 +62,8 @@
   },
   "build": {
     "appId": "app.cleanstream.desktop",
-    "productName": "CleanStream",
-    "copyright": "Copyright © CleanStream",
+    "productName": "MyTube",
+    "copyright": "Copyright © MyTube",
     "directories": {
       "output": "release"
     },
@@ -88,14 +88,15 @@
           ]
         }
       ],
-      "artifactName": "CleanStream-Setup-${version}.${ext}"
+      "artifactName": "MyTube-Setup-${version}.${ext}",
+      "icon": "public/pwa-512.png"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "CleanStream"
+      "shortcutName": "MyTube"
     }
   }
 }

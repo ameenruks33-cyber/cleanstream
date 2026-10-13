@@ -138,7 +138,9 @@ async function createWindow() {
     height: 920,
     minWidth: 960,
     minHeight: 640,
-    backgroundColor: '#0c0b0a',
+    title: 'MyTube',
+    icon: path.join(__dirname, '..', 'public', 'pwa-512.png'),
+    backgroundColor: '#050812',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),

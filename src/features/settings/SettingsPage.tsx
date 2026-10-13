@@ -128,7 +128,7 @@ export function SettingsPage() {
       <section className="rounded-3xl border border-line bg-panel p-6">
         <h2 className="font-display text-2xl">Ad Shield</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Block third-party ads and optional trackers inside CleanStream. Licensed library videos stay ad-free. YouTube’s
+          Block third-party ads and optional trackers inside MyTube. Licensed library videos stay ad-free. YouTube’s
           official player is unchanged — it may still show YouTube ads.
         </p>
         <Link to="/ad-shield" className="mt-4 inline-flex text-sm text-tide">
@@ -139,7 +139,7 @@ export function SettingsPage() {
       <section className="rounded-3xl border border-line bg-panel p-6">
         <h2 className="font-display text-2xl">Device encryption</h2>
         <p className="mt-2 text-sm leading-7 text-muted">
-          CleanStream encrypts library data and Ad Shield settings on this device with AES-256-GCM. Traffic to the app
+          MyTube encrypts library data and Ad Shield settings on this device with AES-256-GCM. Traffic to the app
           uses HTTPS. YouTube playback still goes through Google’s official player. Add a passphrase so someone else
           using this browser cannot read your lists.
         </p>
@@ -152,7 +152,7 @@ export function SettingsPage() {
               .then(() => {
                 setPassphrase('')
                 setVaultLocked(true)
-                setMessage('Vault passphrase saved. You will need it the next time this browser opens CleanStream.')
+                setMessage('Vault passphrase saved. You will need it the next time this browser opens MyTube.')
               })
               .catch((err: unknown) => {
                 setError(err instanceof Error ? err.message : 'Could not protect the vault.')
@@ -205,7 +205,7 @@ export function SettingsPage() {
             checked={state.preferences.analyticsConsent}
             onChange={(event) => updatePreferences({ analyticsConsent: event.target.checked })}
           />
-          Allow basic product metrics (off unless you opt in; CleanStream ships with no tracker)
+          Allow basic product metrics (off unless you opt in; MyTube ships with no tracker)
         </label>
         <div className="mt-5 flex flex-wrap gap-2">
           <Button variant="ghost" onClick={clearHistory}>
@@ -261,7 +261,7 @@ export function SettingsPage() {
           of your library is also deleted. This cannot restore YouTube videos — we never stored the media.
         </p>
         <Button variant="danger" className="mt-4" onClick={() => void deleteAccountData()}>
-          Delete my CleanStream data
+          Delete my MyTube data
         </Button>
       </section>
     </div>

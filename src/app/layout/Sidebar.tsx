@@ -75,7 +75,7 @@ export function Sidebar({
       </nav>
       {!collapsed ? (
         <p className="px-2 text-[11px] leading-5 text-muted">
-          Ad Shield blocks ads in CleanStream — not inside YouTube’s official player.
+          Ad Shield blocks ads in MyTube — not inside YouTube’s official player.
         </p>
       ) : null}
     </aside>

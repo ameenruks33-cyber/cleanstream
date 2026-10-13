@@ -86,7 +86,7 @@ export function AdShieldProvider({ children }: { children: ReactNode }) {
           blockedEstimate: current.blockedEstimate + 1,
           events: appendFilterEvent(current.events, event),
         }))
-        return new Response(null, { status: 451, statusText: 'Blocked by CleanStream Ad Shield' })
+        return new Response(null, { status: 451, statusText: 'Blocked by MyTube Ad Shield' })
       }
       return originalFetch(input, init)
     }

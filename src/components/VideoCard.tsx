@@ -3,12 +3,22 @@ import { motion } from 'framer-motion'
 import type { VideoRef } from '@/types'
 import { formatDate, formatDuration } from '@/lib/format'
 import { SourceBadge } from '@/components/SourceBadge'
+import { rememberWatchQueue, watchPath } from '@/lib/watchQueue'
 
-export function VideoCard({ video }: { video: VideoRef }) {
+export function VideoCard({
+  video,
+  queue,
+  origin = '/',
+}: {
+  video: VideoRef
+  queue?: VideoRef[]
+  origin?: string
+}) {
   return (
     <motion.article whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 320, damping: 22 }}>
       <Link
-        to={`/watch/${video.source}/${video.id}`}
+        to={watchPath(video)}
+        onClick={() => rememberWatchQueue(queue ?? [video], origin)}
         className="group block overflow-hidden rounded-2xl border border-line bg-panel focus-visible:outline-tide"
       >
         <div className="relative aspect-video overflow-hidden bg-raised">

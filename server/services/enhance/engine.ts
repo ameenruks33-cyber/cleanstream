@@ -274,7 +274,7 @@ export async function inspectQuality(fileId: string): Promise<{
   const binaries = binsImpl()
   const authorized = resolveAuthorizedSource(fileId)
   if (!authorized) {
-    return { enhanceable: false, reason: 'Not an authorized CleanStream file.', binaries }
+    return { enhanceable: false, reason: 'Not an authorized MyTube file.', binaries }
   }
   if (!binaries.ffprobe || !binaries.ffmpeg) {
     return {
@@ -323,7 +323,7 @@ export function youtubeQualityNotice(videoId: string): {
     player: 'official-embed',
     videoId,
     reason:
-      'YouTube videos play in the official embed. CleanStream does not extract, download, or upscale YouTube streams. Use the player’s own quality menu, or YouTube Premium where eligible.',
+      'YouTube videos play in the official embed. MyTube does not extract, download, or upscale YouTube streams. Use the player’s own quality menu, or YouTube Premium where eligible.',
   }
 }
 

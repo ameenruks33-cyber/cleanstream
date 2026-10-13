@@ -4,7 +4,9 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(['/favicon.svg', '/manifest.webmanifest', '/pwa-192.png', '/pwa-512.png']))
+      .then((cache) =>
+        cache.addAll(['/logo.jpg', '/favicon.png', '/manifest.webmanifest', '/pwa-192.png', '/pwa-512.png']),
+      )
       .then(() => self.skipWaiting()),
   )
 })

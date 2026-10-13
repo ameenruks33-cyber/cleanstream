@@ -15,8 +15,8 @@ describe('InstallGate', () => {
         <p>App shell</p>
       </InstallGate>,
     )
-    expect(screen.getByRole('heading', { name: 'CleanStream' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Install CleanStream' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'MyTube' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Install MyTube' })).toBeInTheDocument()
     expect(screen.queryByText('App shell')).not.toBeInTheDocument()
   })
 
