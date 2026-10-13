@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, session, shell, safeStorage } = require('electron')
 const { spawn } = require('node:child_process')
 const path = require('node:path')
 const fs = require('node:fs')
@@ -14,10 +14,11 @@ function userEnvPath() {
   return path.join(app.getPath('userData'), '.env')
 }
 
-function loadUserEnv() {
-  const file = userEnvPath()
-  if (!fs.existsSync(file)) return
-  const text = fs.readFileSync(file, 'utf8')
+function userEnvEncPath() {
+  return path.join(app.getPath('userData'), '.env.enc')
+}
+
+function applyEnvText(text) {
   for (const line of text.split(/\r?\n/)) {
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith('#')) continue
@@ -32,6 +33,22 @@ function loadUserEnv() {
       value = value.slice(1, -1)
     }
     if (!process.env[key]) process.env[key] = value
+  }
+}
+
+function loadUserEnv() {
+  const encrypted = userEnvEncPath()
+  const plain = userEnvPath()
+  if (fs.existsSync(encrypted) && safeStorage.isEncryptionAvailable()) {
+    applyEnvText(safeStorage.decryptString(fs.readFileSync(encrypted)))
+    return
+  }
+  if (!fs.existsSync(plain)) return
+  const text = fs.readFileSync(plain, 'utf8')
+  applyEnvText(text)
+  if (safeStorage.isEncryptionAvailable()) {
+    fs.writeFileSync(encrypted, safeStorage.encryptString(text))
+    fs.unlinkSync(plain)
   }
 }
 
@@ -128,6 +145,9 @@ async function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      navigateOnDragDrop: false,
     },
   })
 
@@ -139,7 +159,7 @@ async function createWindow() {
       responseHeaders: {
         ...details.responseHeaders,
         'Content-Security-Policy': [
-          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://i.ytimg.com https://yt3.ggpht.com https://commondatastorage.googleapis.com; media-src 'self' blob: https://commondatastorage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' http://127.0.0.1:8787 https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'",
+          "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://i.ytimg.com https://yt3.ggpht.com https://yt3.googleusercontent.com https://commondatastorage.googleapis.com; media-src 'self' blob: https://commondatastorage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' http://127.0.0.1:8787 https://*.supabase.co wss://*.supabase.co; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
         ],
       },
     })

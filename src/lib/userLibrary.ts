@@ -1,5 +1,6 @@
 import type { HistoryItem, LibraryState, Playlist, Preferences, VideoRef } from '@/types'
 import { validatePlaylistName } from '@/lib/validation'
+import { deleteVaultRecord, readVaultRecord, wipeVault, writeVaultRecord } from '@/lib/cryptoVault'
 
 export const LIBRARY_STORAGE_KEY = 'cleanstream.library.v1'
 
@@ -162,6 +163,41 @@ export function updatePreferences(state: LibraryState, patch: Partial<Preference
 
 export function serializeLibrary(state: LibraryState): string {
   return JSON.stringify(state)
+}
+
+export async function loadEncryptedLibrary(): Promise<{ state: LibraryState; found: boolean }> {
+  try {
+    const vaulted = await readVaultRecord('library')
+    if (vaulted) {
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(LIBRARY_STORAGE_KEY)
+      return { state: parseLibrary(vaulted), found: true }
+    }
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error) throw error
+  }
+  if (typeof localStorage === 'undefined') return { state: createEmptyLibrary(), found: false }
+  const legacy = localStorage.getItem(LIBRARY_STORAGE_KEY)
+  if (!legacy) return { state: createEmptyLibrary(), found: false }
+  const parsed = parseLibrary(legacy)
+  await writeVaultRecord('library', serializeLibrary(parsed))
+  localStorage.removeItem(LIBRARY_STORAGE_KEY)
+  return { state: parsed, found: true }
+}
+
+export async function saveEncryptedLibrary(state: LibraryState): Promise<void> {
+  await writeVaultRecord('library', serializeLibrary(state))
+  if (typeof localStorage !== 'undefined') localStorage.removeItem(LIBRARY_STORAGE_KEY)
+}
+
+export async function wipeEncryptedLibrary(): Promise<void> {
+  await deleteVaultRecord('library')
+  if (typeof localStorage !== 'undefined') localStorage.removeItem(LIBRARY_STORAGE_KEY)
+}
+
+export async function wipeAllDeviceData(): Promise<void> {
+  await wipeVault()
+  if (typeof localStorage === 'undefined') return
+  localStorage.removeItem(LIBRARY_STORAGE_KEY)
 }
 
 export function parseLibrary(raw: string | null): LibraryState {

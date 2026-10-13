@@ -1,13 +1,33 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { defineConfig, type Plugin } from 'vitest/config'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 
+function autoUpdatePlugin(): Plugin {
+  return {
+    name: 'cleanstream-auto-update',
+    apply: 'build',
+    closeBundle() {
+      const version = `${Date.now()}`
+      const swPath = path.resolve(root, 'dist/sw.js')
+      if (existsSync(swPath)) {
+        const source = readFileSync(swPath, 'utf8').replaceAll('__CLEANSTREAM_VERSION__', version)
+        writeFileSync(swPath, source)
+      }
+      writeFileSync(
+        path.resolve(root, 'dist/version.json'),
+        `${JSON.stringify({ version, builtAt: new Date().toISOString() })}\n`,
+      )
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), autoUpdatePlugin()],
   resolve: {
     alias: {
       '@': path.resolve(root, 'src'),

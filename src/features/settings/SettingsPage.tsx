@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLibrary } from '@/app/LibraryProvider'
 import { Button } from '@/components/Button'
 import { fetchHealth, saveYoutubeApiKey } from '@/services/api'
+import { protectVaultWithPassphrase, removeVaultPassphrase, vaultStatus } from '@/lib/cryptoVault'
 import { isSupabaseConfigured } from '@/services/supabaseClient'
 import type { ThemeMode } from '@/types'
 
@@ -20,9 +21,12 @@ export function SettingsPage() {
   const [youtubeReady, setYoutubeReady] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [passphrase, setPassphrase] = useState('')
+  const [vaultLocked, setVaultLocked] = useState(false)
 
   useEffect(() => {
     void fetchHealth().then((health) => setYoutubeReady(health.youtubeConfigured))
+    void vaultStatus().then((status) => setVaultLocked(status === 'locked'))
   }, [])
 
   async function onSignIn(event: FormEvent) {
@@ -130,6 +134,59 @@ export function SettingsPage() {
         <Link to="/ad-shield" className="mt-4 inline-flex text-sm text-tide">
           Open Ad Shield settings
         </Link>
+      </section>
+
+      <section className="rounded-3xl border border-line bg-panel p-6">
+        <h2 className="font-display text-2xl">Device encryption</h2>
+        <p className="mt-2 text-sm leading-7 text-muted">
+          CleanStream encrypts library data and Ad Shield settings on this device with AES-256-GCM. Traffic to the app
+          uses HTTPS. YouTube playback still goes through Google’s official player. Add a passphrase so someone else
+          using this browser cannot read your lists.
+        </p>
+        <form
+          className="mt-4 flex flex-col gap-3 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault()
+            setError(null)
+            void protectVaultWithPassphrase(passphrase)
+              .then(() => {
+                setPassphrase('')
+                setVaultLocked(true)
+                setMessage('Vault passphrase saved. You will need it the next time this browser opens CleanStream.')
+              })
+              .catch((err: unknown) => {
+                setError(err instanceof Error ? err.message : 'Could not protect the vault.')
+              })
+          }}
+        >
+          <input
+            type="password"
+            minLength={8}
+            value={passphrase}
+            onChange={(event) => setPassphrase(event.target.value)}
+            placeholder="At least 8 characters"
+            aria-label="Vault passphrase"
+            autoComplete="new-password"
+            className="flex-1 rounded-full border border-line bg-raised px-4 py-2.5 text-sm"
+          />
+          <Button variant="primary" type="submit">
+            {vaultLocked ? 'Update passphrase' : 'Encrypt with passphrase'}
+          </Button>
+        </form>
+        {vaultLocked ? (
+          <Button
+            variant="ghost"
+            className="mt-3"
+            onClick={() => {
+              void removeVaultPassphrase().then(() => {
+                setVaultLocked(false)
+                setMessage('Passphrase removed. Data stays AES-encrypted with a device key.')
+              })
+            }}
+          >
+            Remove passphrase lock
+          </Button>
+        ) : null}
       </section>
 
       <section className="rounded-3xl border border-line bg-panel p-6">

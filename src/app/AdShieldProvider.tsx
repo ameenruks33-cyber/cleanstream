@@ -13,6 +13,7 @@ import {
   clearAdShieldStore,
   emptyAdShieldStore,
   loadAdShieldStore,
+  loadEncryptedAdShieldStore,
   saveAdShieldStore,
   type StoredAdShield,
 } from '@/lib/adshield/storage'
@@ -39,13 +40,31 @@ function syncDesktop(settings: AdShieldSettings) {
 
 export function AdShieldProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<StoredAdShield>(() => loadAdShieldStore())
+  const [hydrated, setHydrated] = useState(false)
   const storeRef = useRef(store)
   storeRef.current = store
 
   useEffect(() => {
+    let cancelled = false
+    void loadEncryptedAdShieldStore()
+      .then(({ store: loaded, found }) => {
+        if (cancelled) return
+        if (found) setStore(loaded)
+        setHydrated(true)
+      })
+      .catch(() => {
+        if (!cancelled) setHydrated(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
     saveAdShieldStore(store)
     syncDesktop(store.settings)
-  }, [store])
+  }, [store, hydrated])
 
   useEffect(() => {
     function onReset() {

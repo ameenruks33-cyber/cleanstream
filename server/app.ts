@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import express from 'express'
 import helmet from 'helmet'
 import { applySecurity } from './middleware/security.ts'
+import { httpsOnly } from './middleware/httpsOnly.ts'
 import { createApiLimiter } from './middleware/rateLimit.ts'
 import { errorHandler, notFound } from './middleware/errorHandler.ts'
 import { youtubeRouter } from './routes/youtube.ts'
@@ -15,9 +16,10 @@ import type { Env } from './config/env.ts'
 export function createApp(env: Env) {
   const app = express()
   app.set('trust proxy', 1)
+  app.use(httpsOnly(env))
   app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }))
   applySecurity(app, env)
-  app.use(express.json({ limit: '32kb' }))
+  app.use(express.json({ limit: '32kb', strict: true }))
 
   app.use('/api', createApiLimiter(env))
   app.use('/api/health', healthRouter(env))

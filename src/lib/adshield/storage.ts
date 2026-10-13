@@ -1,3 +1,4 @@
+import { deleteVaultRecord, readVaultRecord, writeVaultRecord } from '@/lib/cryptoVault'
 import { AD_SHIELD_STORAGE_KEY, defaultAdShieldSettings, sanitizeSettings } from './engine.ts'
 import type { AdShieldSettings, FilterEvent } from './types.ts'
 
@@ -35,13 +36,34 @@ export function loadAdShieldStore(): StoredAdShield {
   return parseAdShieldStore(window.localStorage.getItem(AD_SHIELD_STORAGE_KEY))
 }
 
+export async function loadEncryptedAdShieldStore(): Promise<{ store: StoredAdShield; found: boolean }> {
+  try {
+    const vaulted = await readVaultRecord('adshield')
+    if (vaulted) {
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(AD_SHIELD_STORAGE_KEY)
+      return { store: parseAdShieldStore(vaulted), found: true }
+    }
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error) throw error
+  }
+  if (typeof localStorage === 'undefined') return { store: emptyAdShieldStore(), found: false }
+  const legacy = localStorage.getItem(AD_SHIELD_STORAGE_KEY)
+  if (!legacy) return { store: emptyAdShieldStore(), found: false }
+  const parsed = parseAdShieldStore(legacy)
+  await writeVaultRecord('adshield', JSON.stringify(parsed))
+  localStorage.removeItem(AD_SHIELD_STORAGE_KEY)
+  return { store: parsed, found: true }
+}
+
 export function saveAdShieldStore(store: StoredAdShield): void {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(AD_SHIELD_STORAGE_KEY, JSON.stringify(store))
+  void writeVaultRecord('adshield', JSON.stringify(store))
+  window.localStorage.removeItem(AD_SHIELD_STORAGE_KEY)
 }
 
 export function clearAdShieldStore(): void {
   if (typeof window === 'undefined') return
   window.localStorage.removeItem(AD_SHIELD_STORAGE_KEY)
+  void deleteVaultRecord('adshield')
   window.dispatchEvent(new Event('cleanstream-adshield-reset'))
 }

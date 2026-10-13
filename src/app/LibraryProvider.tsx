@@ -19,13 +19,15 @@ import {
   createPlaylist,
   deletePlaylist,
   isFavorite as checkFavorite,
+  loadEncryptedLibrary,
   parseLibrary,
   recordSearch,
   removeFromPlaylist,
   renamePlaylist,
-  serializeLibrary,
+  saveEncryptedLibrary,
   toggleFavorite,
   updatePreferences,
+  wipeAllDeviceData,
 } from '@/lib/userLibrary'
 import { supabase } from '@/services/supabaseClient'
 import { deleteRemoteLibrary, mergeAndSync, pushRemoteLibrary } from '@/services/sync'
@@ -65,10 +67,28 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [ready, setReady] = useState(false)
+  const [vaultReady, setVaultReady] = useState(false)
 
   useEffect(() => {
-    window.localStorage.setItem(LIBRARY_STORAGE_KEY, serializeLibrary(state))
-  }, [state])
+    let cancelled = false
+    void loadEncryptedLibrary()
+      .then(({ state: loaded, found }) => {
+        if (cancelled) return
+        if (found) setState(loaded)
+        setVaultReady(true)
+      })
+      .catch(() => {
+        if (!cancelled) setVaultReady(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!vaultReady) return
+    void saveEncryptedLibrary(state)
+  }, [state, vaultReady])
 
   useEffect(() => {
     if (!supabase) {
@@ -81,7 +101,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setSession(data.session)
       setUser(data.session?.user ?? null)
       if (data.session?.user) {
-        const merged = await mergeAndSync(data.session.user.id, loadLocal())
+        const local = (await loadEncryptedLibrary()).state
+        const merged = await mergeAndSync(data.session.user.id, local)
         if (!cancelled) setState(merged)
       }
       setReady(true)
@@ -90,7 +111,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
       if (nextSession?.user) {
-        void mergeAndSync(nextSession.user.id, loadLocal()).then(setState)
+        void loadEncryptedLibrary().then(({ state: local }) => mergeAndSync(nextSession.user.id, local)).then(setState)
       }
     })
     return () => {
@@ -155,7 +176,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       deleteAccountData: async () => {
         if (user) await deleteRemoteLibrary(user.id)
         if (supabase) await supabase.auth.signOut()
-        window.localStorage.removeItem(LIBRARY_STORAGE_KEY)
+        await wipeAllDeviceData()
         clearAdShieldStore()
         setState(createEmptyLibrary())
         setUser(null)
