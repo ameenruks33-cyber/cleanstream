@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import express from 'express'
 import helmet from 'helmet'
 import { applySecurity } from './middleware/security.ts'
@@ -12,8 +11,6 @@ import { healthRouter } from './routes/health.ts'
 import { setupRouter } from './routes/setup.ts'
 import { enhanceRouter } from './routes/enhance.ts'
 import type { Env } from './config/env.ts'
-
-const here = dirname(fileURLToPath(import.meta.url))
 
 export function createApp(env: Env) {
   const app = express()
@@ -30,7 +27,7 @@ export function createApp(env: Env) {
   app.use('/api/enhance', enhanceRouter())
   app.use('/api', notFound)
 
-  const dist = join(here, '..', 'dist')
+  const dist = join(process.cwd(), 'dist')
   if (env.NODE_ENV === 'production' && existsSync(dist)) {
     app.use(express.static(dist))
     app.get(/.*/, (_req, res) => {
